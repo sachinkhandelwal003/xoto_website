@@ -86,7 +86,7 @@ const Ecommerce = () => {
       </Link>
 
       <Link
-        to="/ecommerce/seller"
+        to="/seller/registration"
         className="border-2 border-white px-4 sm:px-8 py-2.5 sm:py-3 rounded-md hover:bg-[#5C039B] hover:text-white hover:border-[#5C039B] transition text-sm sm:text-base flex-1 sm:flex-none whitespace-nowrap text-center"
       >
         {t("hero.vendor")}

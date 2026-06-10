@@ -11,12 +11,12 @@
     "email": "Электронная почта"
   },
   "offerings": [
-    { "label": "Ландшафтный дизайн", "path": "/landscaping" },
-    { "label": "Интерьеры", "path": "/services/interior" },
+    { "label": "Ландшафтный дизайн", "path": "/service/landscaping" },
+    { "label": "Интерьеры", "path": "/service/interior" },
     { "label": "Аренда", "path": "/Property" },
     { "label": "Купить", "path": "/Property" },
     { "label": "Продать", "path": "/Property" },
-    { "label": "Ипотека", "path": "/mortgage/services" }
+    { "label": "Ипотека", "path": "/service/mortgage" }
     
   ],
   "resources": [

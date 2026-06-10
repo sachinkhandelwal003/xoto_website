@@ -2,12 +2,53 @@
 /**
  * react-router-dom → Next.js Pages Router compatibility shim.
  * Webpack aliases all "react-router-dom" imports here.
- * Zero changes needed in existing components.
  */
 
 import React from 'react';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
+
+// ─── Params context (for extracted :param values) ────────────────────────────
+const ParamsContext = React.createContext({});
+
+// ─── Path matching ────────────────────────────────────────────────────────────
+function matchPath(pattern, currentPath) {
+  if (!pattern && pattern !== '') return null;
+
+  // Index / root route
+  if (pattern === '/' || pattern === '') {
+    return currentPath === '' || currentPath === '/' ? {} : null;
+  }
+
+  const patternParts = pattern.replace(/^\//, '').split('/');
+  const pathParts = currentPath.replace(/^\//, '').split('/').filter(Boolean);
+
+  if (patternParts.length !== pathParts.length) return null;
+
+  const params = {};
+  for (let i = 0; i < patternParts.length; i++) {
+    if (patternParts[i].startsWith(':')) {
+      params[patternParts[i].slice(1)] = pathParts[i];
+    } else if (patternParts[i] !== pathParts[i]) {
+      return null;
+    }
+  }
+  return params;
+}
+
+// ─── Flatten children (handles arrays from .map()) ───────────────────────────
+function flattenRoutes(children) {
+  const routes = [];
+  React.Children.forEach(children, (child) => {
+    if (!child) return;
+    if (Array.isArray(child)) {
+      routes.push(...flattenRoutes(child));
+    } else if (React.isValidElement(child)) {
+      routes.push(child);
+    }
+  });
+  return routes;
+}
 
 // ─── Link ────────────────────────────────────────────────────────────────────
 export function Link({ to, href, children, className, style, onClick, replace: replaceFlag, ...rest }) {
@@ -70,7 +111,7 @@ export function useNavigate() {
 export function useLocation() {
   const router = useRouter();
   return {
-    pathname: router.pathname,
+    pathname: router.asPath.split('?')[0],
     search: router.asPath.includes('?') ? '?' + router.asPath.split('?')[1] : '',
     hash: '',
     state: null,
@@ -79,7 +120,10 @@ export function useLocation() {
 
 export function useParams() {
   const router = useRouter();
-  return router.query || {};
+  const ctxParams = React.useContext(ParamsContext);
+  // Merge Next.js query params with extracted path params
+  const { roleSlug, rest, ...queryRest } = router.query || {};
+  return { ...queryRest, ...ctxParams };
 }
 
 export function useSearchParams() {
@@ -93,23 +137,51 @@ export function useMatch(pattern) {
   const router = useRouter();
   if (!pattern) return null;
   const path = typeof pattern === 'string' ? pattern : pattern.path;
-  if (router.pathname === path) {
-    return { pathname: router.pathname, params: router.query };
+  const rest = router.query?.rest;
+  const currentPath = Array.isArray(rest) ? rest.join('/') : router.asPath.split('?')[0];
+  const params = matchPath(path, currentPath);
+  if (params !== null) {
+    return { pathname: router.asPath, params };
   }
   return null;
 }
 
-// ─── Route / Routes / BrowserRouter (no-ops in Next.js) ──────────────────────
-export function BrowserRouter({ children }) {
-  return <>{children}</>;
-}
-
+// ─── Routes — matches current URL and renders the correct Route's element ────
 export function Routes({ children }) {
-  return <>{children}</>;
+  const router = useRouter();
+
+  // Build current path from Next.js catch-all param
+  const rest = router.query?.rest;
+  const currentPath = Array.isArray(rest) ? rest.join('/') : '';
+
+  const routes = flattenRoutes(children);
+
+  for (const route of routes) {
+    if (!React.isValidElement(route)) continue;
+    const { path, element } = route.props;
+    if (element === undefined) continue;
+
+    const params = matchPath(path ?? '', currentPath);
+    if (params !== null) {
+      return (
+        <ParamsContext.Provider value={params}>
+          {element}
+        </ParamsContext.Provider>
+      );
+    }
+  }
+
+  return null;
 }
 
+// ─── Route — no-op; Routes handles rendering ─────────────────────────────────
 export function Route() {
   return null;
+}
+
+// ─── Misc no-ops ─────────────────────────────────────────────────────────────
+export function BrowserRouter({ children }) {
+  return <>{children}</>;
 }
 
 export function Switch({ children }) {
@@ -124,22 +196,11 @@ export function ScrollRestoration() {
   return null;
 }
 
-// ─── Default export (some components do: import RRD from "react-router-dom") ─
+// ─── Default export ───────────────────────────────────────────────────────────
 const ReactRouterDomCompat = {
-  Link,
-  NavLink,
-  Navigate,
-  BrowserRouter,
-  Routes,
-  Route,
-  Switch,
-  Outlet,
-  ScrollRestoration,
-  useNavigate,
-  useLocation,
-  useParams,
-  useSearchParams,
-  useMatch,
+  Link, NavLink, Navigate,
+  BrowserRouter, Routes, Route, Switch, Outlet, ScrollRestoration,
+  useNavigate, useLocation, useParams, useSearchParams, useMatch,
 };
 
 export default ReactRouterDomCompat;

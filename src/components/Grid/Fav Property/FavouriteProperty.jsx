@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Heart, ArrowLeft, MapPin, Bed, Bath, Maximize2, Trash2 } from "lucide-react";
+import { Heart, ArrowLeft } from "lucide-react";
 import { apiService } from "../../../manageApi/utils/custom.apiservice";
 import bedicon from "../../../assets/img/buy/icon-bed.png";
 import tubicon from "../../../assets/img/buy/icon-tub.png";
@@ -9,15 +9,12 @@ import layouticon from "../../../assets/img/buy/icon-layout.png";
 const transformProperty = (item) => ({
   id: item._id || item.id,
   imgUrl:
-    // Page2/OurProperty format — photos seedha array hai
     (Array.isArray(item.photos) && item.photos[0]) ||
-    // Hot property format — photos object ke andar nested arrays
     item.photos?.architecture?.[0] ||
     item.photos?.interior?.[0] ||
     item.photos?.other?.[0] ||
     item.mainLogo ||
     "https://via.placeholder.com/400x300?text=No+Image",
-
   title: item.propertyName || "Unnamed Property",
   price: item.price
     ? `${item.currency || "AED"} ${Number(item.price).toLocaleString()}`
@@ -46,26 +43,20 @@ const FavouriteProperties = () => {
     fetchFavourites();
   }, []);
 
-const fetchFavourites = async () => {
-  setLoading(true);
-  try {
-    // timestamp add karo — cache bust karta hai
-    const res = await apiService.get(`/properties/favourites?t=${Date.now()}`);
-    console.log("FAV API response:", res);
-
-    const raw = res?.data;
-    const list = Array.isArray(raw)       ? raw
-               : Array.isArray(raw?.data) ? raw.data
-               : [];
-
-    setProperties(list.map(transformProperty));
-  } catch (err) {
-    console.error("Failed to fetch favourites:", err);
-    setProperties([]);
-  } finally {
-    setLoading(false);
-  }
-};
+  const fetchFavourites = async () => {
+    setLoading(true);
+    try {
+      const res = await apiService.get(`/properties/favourites?t=${Date.now()}`);
+      const raw = res?.data;
+      const list = Array.isArray(raw) ? raw : Array.isArray(raw?.data) ? raw.data : [];
+      setProperties(list.map(transformProperty));
+    } catch (err) {
+      console.error("Failed to fetch favourites:", err);
+      setProperties([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleRemove = async (propertyId) => {
     if (removingId) return;
@@ -100,18 +91,12 @@ const fetchFavourites = async () => {
 
   return (
     <div className="min-h-screen" style={{ background: "#f8f7ff", fontFamily: "'DM Sans', sans-serif" }}>
-      {/* ── Top Bar ── */}
+      {/* Top Bar */}
       <div style={{
-        background: "white",
-        borderBottom: "1px solid #ede9fe",
-        padding: "0 24px",
-        height: "56px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        position: "sticky",
-        top: 0,
-        zIndex: 10,
+        background: "white", borderBottom: "1px solid #ede9fe",
+        padding: "0 24px", height: "56px",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        position: "sticky", top: 0, zIndex: 10,
       }}>
         <button
           onClick={() => navigate(-1)}
@@ -143,8 +128,6 @@ const fetchFavourites = async () => {
       </div>
 
       <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "24px 16px" }}>
-
-        {/* ── Empty State ── */}
         {properties.length === 0 ? (
           <div style={{
             display: "flex", flexDirection: "column", alignItems: "center",
@@ -178,12 +161,9 @@ const fetchFavourites = async () => {
           </div>
         ) : (
           <>
-            {/* ── Subtitle ── */}
             <p style={{ fontSize: "12px", color: "#9ca3af", marginBottom: "20px", fontWeight: 500 }}>
               {properties.length} saved {properties.length === 1 ? "property" : "properties"}
             </p>
-
-            {/* ── Grid ── */}
             <div style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
@@ -205,22 +185,19 @@ const fetchFavourites = async () => {
   );
 };
 
-// ── Compact Fav Card ─────────────────────────────────────────────────────────
 function FavCard({ deal, removing, onRemove }) {
   const [imgError, setImgError] = useState(false);
 
   return (
-    <div style={{
-      background: "white",
-      borderRadius: "12px",
-      overflow: "hidden",
-      border: "1px solid #d5d2dd",
-      boxShadow: "0 2px 12px rgba(92,3,155,0.06)",
-      transition: "all 0.2s ease",
-      opacity: removing ? 0.5 : 1,
-      transform: removing ? "scale(0.97)" : "scale(1)",
-      position: "relative",
-    }}
+    <div
+      style={{
+        background: "white", borderRadius: "12px", overflow: "hidden",
+        border: "1px solid #d5d2dd", boxShadow: "0 2px 12px rgba(92,3,155,0.06)",
+        transition: "all 0.2s ease",
+        opacity: removing ? 0.5 : 1,
+        transform: removing ? "scale(0.97)" : "scale(1)",
+        position: "relative",
+      }}
       onMouseEnter={e => e.currentTarget.style.boxShadow = "0 6px 24px rgba(92,3,155,0.13)"}
       onMouseLeave={e => e.currentTarget.style.boxShadow = "0 2px 12px rgba(92,3,155,0.06)"}
     >
@@ -232,14 +209,12 @@ function FavCard({ deal, removing, onRemove }) {
           onError={() => setImgError(true)}
           style={{ width: "100%", height: "100%", objectFit: "cover" }}
         />
-
-        {/* Gradient overlay */}
         <div style={{
           position: "absolute", inset: 0,
           background: "linear-gradient(to top, rgba(0,0,0,0.35) 0%, transparent 50%)",
         }} />
 
-        {/* Tag — top left */}
+        {/* Tag */}
         <div style={{
           position: "absolute", top: "10px", left: "10px",
           background: "rgba(255,255,255,0.92)", backdropFilter: "blur(4px)",
@@ -250,7 +225,7 @@ function FavCard({ deal, removing, onRemove }) {
           {deal.tag?.replace("_", " ") || "Property"}
         </div>
 
-        {/* Remove button — top right */}
+        {/* Remove button */}
         <button
           onClick={() => onRemove(deal.id)}
           disabled={removing}
@@ -263,25 +238,23 @@ function FavCard({ deal, removing, onRemove }) {
             cursor: removing ? "not-allowed" : "pointer",
             transition: "all 0.15s ease",
           }}
-          onMouseEnter={e => e.currentTarget.style.background = "#fff0f0"}
-          onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.92)"}
+          onMouseEnter={e => { if (!removing) e.currentTarget.style.background = "#fff0f0"; }}
+          onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.92)"; }}
         >
           {removing ? (
             <div style={{
               width: "12px", height: "12px",
-              border: "2px solid #5C039B",
-              borderTopColor: "transparent",
-              borderRadius: "50%",
-              animation: "spin 0.6s linear infinite",
+              border: "2px solid #5C039B", borderTopColor: "transparent",
+              borderRadius: "50%", animation: "spin 0.6s linear infinite",
             }} />
           ) : (
             <svg width="13" height="13" viewBox="0 0 24 24" fill="#e11d48" stroke="#e11d48" strokeWidth="2">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
             </svg>
           )}
         </button>
 
-        {/* Price — bottom left over image */}
+        {/* Price */}
         <div style={{
           position: "absolute", bottom: "10px", left: "10px",
           color: "white", fontSize: "13px", fontWeight: 700,
@@ -293,8 +266,6 @@ function FavCard({ deal, removing, onRemove }) {
 
       {/* Content */}
       <div style={{ padding: "12px 14px" }}>
-
-        {/* Title */}
         <h3 style={{
           fontSize: "13px", fontWeight: 600, color: "#1a1a2e",
           margin: "0 0 5px", lineHeight: 1.4,
@@ -303,21 +274,16 @@ function FavCard({ deal, removing, onRemove }) {
           {deal.title}
         </h3>
 
-        {/* Location */}
         <div style={{ display: "flex", alignItems: "center", gap: "4px", marginBottom: "10px" }}>
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2.5">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-            <circle cx="12" cy="10" r="3"/>
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+            <circle cx="12" cy="10" r="3" />
           </svg>
-          <span style={{ fontSize: "11px", color: "#9ca3af", fontWeight: 400 }}>
-            {deal.location}
-          </span>
+          <span style={{ fontSize: "11px", color: "#9ca3af", fontWeight: 400 }}>{deal.location}</span>
         </div>
 
-        {/* Divider */}
         <div style={{ height: "1px", background: "#f3f4f6", marginBottom: "10px" }} />
 
-        {/* Stats Row */}
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           {deal.bedroomType === "studio" ? (
             <StatChip icon={bedicon} label="Studio" purple />

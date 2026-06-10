@@ -11,12 +11,12 @@
     "email": "Correo electrónico"
   },
   "offerings": [
-    { "label": "Paisajismo", "path": "/landscaping" },
-    { "label": "Interiores", "path": "/services/interior" },
+    { "label": "Paisajismo", "path": "/service/landscaping" },
+    { "label": "Interiores", "path": "/service/interior" },
     { "label": "Alquiler", "path": "/Property" },
     { "label": "Comprar", "path": "/Property" },
     { "label": "Vender", "path": "/Property" },
-    { "label": "Hipotecas", "path": "/mortgage/services" }
+    { "label": "Hipotecas", "path": "/service/mortgage" }
    
   ],
   "resources": [

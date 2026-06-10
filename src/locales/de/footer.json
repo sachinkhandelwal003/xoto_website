@@ -11,12 +11,12 @@
     "email": "E-Mail"
   },
   "offerings": [
-    { "label": "Landschaftsbau", "path": "/landscaping" },
-    { "label": "Innenausbau", "path": "/services/interior" },
+    { "label": "Landschaftsbau", "path": "/service/landscaping" },
+    { "label": "Innenausbau", "path": "/service/interior" },
     { "label": "Vermietung", "path": "/Property" },
     { "label": "Kaufen", "path": "/Property" },
     { "label": "Verkaufen", "path": "/Property" },
-    { "label": "Hypotheken", "path": "/mortgage/services" }
+    { "label": "Hypotheken", "path": "/service/mortgage" }
     
   ],
   "resources": [

@@ -11,12 +11,12 @@
     "email": "E-posta"
   },
   "offerings": [
-    { "label": "Peyzaj", "path": "/landscaping" },
-    { "label": "İç Mekanlar", "path": "/services/interior" },
+    { "label": "Peyzaj", "path": "/service/landscaping" },
+    { "label": "İç Mekanlar", "path": "/service/interior" },
     { "label": "Kiralama", "path": "/Property" },
     { "label": "Satın Al", "path": "/Property" },
     { "label": "Sat", "path": "/Property" },
-    { "label": "Konut Kredileri", "path": "/mortgage/services" }
+    { "label": "Konut Kredileri", "path": "/service/mortgage" }
   
   ],
   "resources": [

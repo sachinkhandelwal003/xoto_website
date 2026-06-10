@@ -11,12 +11,12 @@
     "email": "ਈਮੇਲ"
   },
   "offerings": [
-    { "label": "ਲੈਂਡਸਕੇਪਿੰਗ", "path": "/landscaping" },
-    { "label": "ਇੰਟੀਰੀਅਰ", "path": "/services/interior" },
+    { "label": "ਲੈਂਡਸਕੇਪਿੰਗ", "path": "/service/landscaping" },
+    { "label": "ਇੰਟੀਰੀਅਰ", "path": "/service/interior" },
     { "label": "ਕਿਰਾਇਆ", "path": "/Property" },
     { "label": "ਖਰੀਦੋ", "path": "/Property" },
     { "label": "ਵੇਚੋ", "path": "/Property" },
-    { "label": "ਹੋਮ ਲੋਨ", "path": "/mortgage/services" }
+    { "label": "ਹੋਮ ਲੋਨ", "path": "/service/mortgage" }
     
   ],
   "resources": [

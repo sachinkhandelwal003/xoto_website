@@ -5,8 +5,8 @@ import xobiaAvatar from "../../assets/img/girlimage.png";
 import { motion, AnimatePresence } from "framer-motion";
 import { getChatSessionId } from "../../utils/createSessionID"; 
 
-// ✅ 1. Import the New Voice Interface
-import VoiceAIInterface from "./VoiceAIInterface"; 
+// ✅ Using VAPI voice (VoiceAIInterface) matching alternative project config
+import VoiceAIInterface from "./VoiceAIInterface";
 
 const API = "https://xoto.ae"; // Change this to your actual backend URL
 

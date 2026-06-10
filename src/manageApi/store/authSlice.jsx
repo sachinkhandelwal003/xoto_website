@@ -6,14 +6,22 @@ import axios from "axios";
 // Set base URL globally fsdf
 // const API_BASE = 'https://kotiboxglobaltech.online/api';
 // const API_BASE = 'http://localhost:5000/api';
-const API_BASE = 'https://xoto.ae/api';
+const API_BASE = axios.defaults.baseURL || 'https://xoto.ae/api';
 
 
   
-// Load from localStorage (SSR-safe)
+// Load from localStorage
 const loadInitialState = () => {
-  if (typeof window === 'undefined') {
-    return { user: null, token: null, permissions: {}, loading: false, error: null, isAuthenticated: false };
+  if (typeof window === "undefined") {
+    return {
+      user: null,
+      token: null,
+      permissions: {},
+      loading: false,
+      error: null,
+      isAuthenticated: false,
+      rehydrated: false,
+    };
   }
   const token = localStorage.getItem("token");
   if (token) {
@@ -28,6 +36,7 @@ const loadInitialState = () => {
           loading: false,
           error: null,
           isAuthenticated: true,
+          rehydrated: false, // Must be false initially to match SSR HTML
         };
       } else {
         localStorage.removeItem("token");
@@ -43,6 +52,7 @@ const loadInitialState = () => {
     loading: false,
     error: null,
     isAuthenticated: false,
+    rehydrated: false, // Must be false initially to match SSR HTML
   };
 };
 
@@ -59,7 +69,9 @@ export const loginUser = createAsyncThunk(
       }
 
       const token = data.token;
-      localStorage.setItem("token", token);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("token", token);
+      }
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
       const decoded = jwtDecode(token);
@@ -92,7 +104,9 @@ export const logoutUser = createAsyncThunk(
     } catch (error) {
       console.warn("Logout error:", error);
     } finally {
-      localStorage.removeItem("token");
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("token");
+      }
       delete axios.defaults.headers.common["Authorization"];
     }
   }
@@ -111,11 +125,15 @@ export const refreshToken = createAsyncThunk(
       const newToken = res.data.token;
       const decoded = jwtDecode(newToken);
 
-      localStorage.setItem("token", newToken);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("token", newToken);
+      }
       axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
       return { user: decoded, token: newToken };
     } catch (err) {
-      localStorage.removeItem("token");
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("token");
+      }
       delete axios.defaults.headers.common['Authorization'];
       return rejectWithValue("Refresh failed");
     }
@@ -151,6 +169,8 @@ const authSlice = createSlice({
   initialState: loadInitialState(),
   reducers: {
     rehydrateAuthState: (state) => {
+      state.rehydrated = true;
+      if (typeof window === "undefined") return;
       const token = localStorage.getItem("token");
       if (token) {
         try {

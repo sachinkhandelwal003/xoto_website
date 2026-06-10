@@ -486,13 +486,15 @@
 
 
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { apiService } from "../../manageApi/utils/custom.apiservice";
 import toast, { Toaster } from 'react-hot-toast';
 import wave1 from "../../assets/img/wave/waveint2.png";
+import { Country } from "country-state-city";
+import { parsePhoneNumberFromString } from "libphonenumber-js";
 import {
   FaMoneyBillWave, FaCheckCircle, FaInfoCircle, FaTimes,
-  FaCalendarAlt, FaArrowRight, FaCalculator, FaChevronRight
+  FaCalendarAlt, FaCalculator, FaChevronRight
 } from 'react-icons/fa';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -506,16 +508,6 @@ const PRODUCTS = [
 const LOCATIONS = [
   'Abu Dhabi','Dubai','Sharjah','Ajman',
   'Ras Al Khaimah','Fujairah','Umm Al Quwain','Al Ain',
-];
-
-const COUNTRIES = [
-  { code: 'AE', dialCode: '+971', maxLength: 9,  name: 'UAE'          },
-  { code: 'IN', dialCode: '+91',  maxLength: 10, name: 'India'        },
-  { code: 'SA', dialCode: '+966', maxLength: 9,  name: 'Saudi Arabia' },
-  { code: 'US', dialCode: '+1',   maxLength: 10, name: 'USA'          },
-  { code: 'GB', dialCode: '+44',  maxLength: 10, name: 'UK'           },
-  { code: 'PK', dialCode: '+92',  maxLength: 10, name: 'Pakistan'     },
-  { code: 'QA', dialCode: '+974', maxLength: 8,  name: 'Qatar'        },
 ];
 
 const MIN_SALARY = 10000;
@@ -722,9 +714,6 @@ const mInp = { width:'100%', padding:'10px 13px', background:'#F8FAFC', border:'
 const mSel = { ...mInp, appearance:'none', cursor:'pointer', backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath fill='%2394A3B8' d='M5 7L0 0h10z'/%3E%3C/svg%3E\")", backgroundRepeat:'no-repeat', backgroundPosition:'right 12px center' };
 const mLbl = { display:'block', fontSize:10, fontWeight:700, textTransform:'uppercase', letterSpacing:'.07em', color:'#64748B', marginBottom:5 };
 const mBtn = (active=true) => ({ background: active ? 'linear-gradient(135deg,#5C039B,#7C3AED)' : '#E2E8F0', color: active ? '#fff' : '#94A3B8', border:'none', width:'100%', padding:'13px 16px', borderRadius:11, fontWeight:700, fontSize:13, cursor: active ? 'pointer' : 'not-allowed', fontFamily:'inherit', display:'flex', alignItems:'center', justifyContent:'center', gap:7, boxShadow: active ? '0 6px 20px rgba(92,3,155,.25)' : 'none', transition:'all .2s' });
-const mPhoneWrap = { display:'flex', border:'1.5px solid #E9EEF5', borderRadius:10, background:'#F8FAFC', overflow:'hidden' };
-const mPhoneFlag = { display:'flex', alignItems:'center', padding:'0 10px', background:'#F1F5F9', borderRight:'1.5px solid #E9EEF5', gap:5 };
-
 // ─── Loan Summary Modal ───────────────────────────────────────────────────────
 
 const LoanSummaryModal = ({ isOpen, onClose, data }) => {
@@ -760,36 +749,158 @@ const LoanSummaryModal = ({ isOpen, onClose, data }) => {
   );
 };
 
+// ─── Searchable Country Select ────────────────────────────────────────────────
+
+const SearchableCountrySelect = ({ countries, value, onChange, type = 'dial' }) => {
+  const [open, setOpen]   = useState(false);
+  const [q,    setQ]      = useState('');
+  const ref               = useRef(null);
+  const inputRef          = useRef(null);
+  const selected          = countries.find(c => c.iso === value) || countries[0];
+
+  const filtered = q
+    ? countries.filter(c =>
+        c.name.toLowerCase().includes(q.toLowerCase()) ||
+        c.dialCode.includes(q.replace(/\D/g,''))
+      )
+    : countries;
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) { setOpen(false); setQ(''); } };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [open]);
+
+  useEffect(() => { if (open) setTimeout(() => inputRef.current?.focus(), 30); }, [open]);
+
+  const triggerStyle = {
+    display:'flex', alignItems:'center', gap:6, padding:'10px 12px',
+    background:'#F8FAFC', border:'1.5px solid #E9EEF5', borderRadius:10,
+    cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap',
+    ...(type === 'nationality' ? { width:'100%', justifyContent:'space-between' } : {}),
+  };
+
+  return (
+    <div ref={ref} style={{ position:'relative', ...(type==='nationality'?{width:'100%'}:{}) }}>
+      <button type="button" onClick={()=>setOpen(o=>!o)} style={triggerStyle}>
+        <img src={`https://flagcdn.com/w20/${selected.iso.toLowerCase()}.png`} alt="" style={{ width:16, borderRadius:2, flexShrink:0 }}/>
+        {type === 'dial'
+          ? <span style={{ fontWeight:700, fontSize:12, color:'#4C1D95' }}>+{selected.dialCode}</span>
+          : <span style={{ fontWeight:600, fontSize:13, color:'#1E293B', flex:1, textAlign:'left' }}>{selected.name}</span>
+        }
+        <span style={{ color:'#94A3B8', fontSize:9, marginLeft:2 }}>▾</span>
+      </button>
+
+      {open && (
+        <div style={{
+          position:'absolute', top:'calc(100% + 4px)', left:0, width:260,
+          background:'#fff', border:'1.5px solid #E9EEF5', borderRadius:12,
+          boxShadow:'0 8px 28px rgba(0,0,0,.13)', zIndex:1000, overflow:'hidden',
+        }}>
+          <div style={{ padding:8 }}>
+            <input ref={inputRef} type="text" value={q} onChange={e=>setQ(e.target.value)}
+              placeholder="Search country…"
+              style={{ width:'100%', padding:'8px 10px', border:'1.5px solid #E9EEF5', borderRadius:8, fontSize:12, outline:'none', fontFamily:'inherit', boxSizing:'border-box' }}/>
+          </div>
+          <div style={{ maxHeight:210, overflowY:'auto' }}>
+            {filtered.slice(0, 120).map(c => (
+              <button key={c.iso} type="button" onClick={()=>{ onChange(c.iso); setOpen(false); setQ(''); }}
+                style={{ display:'flex', alignItems:'center', gap:8, width:'100%', padding:'8px 12px',
+                  background: c.iso===value ? '#F5F0FF' : 'transparent',
+                  border:'none', cursor:'pointer', fontFamily:'inherit', textAlign:'left' }}>
+                <img src={`https://flagcdn.com/w20/${c.iso.toLowerCase()}.png`} alt="" style={{ width:16, borderRadius:2, flexShrink:0 }}/>
+                <span style={{ fontSize:12, fontWeight:600, color:'#1E293B', flex:1 }}>{c.name}</span>
+                {type==='dial' && <span style={{ fontSize:11, color:'#7C3AED', fontWeight:700 }}>+{c.dialCode}</span>}
+              </button>
+            ))}
+            {filtered.length === 0 && (
+              <p style={{ padding:'12px 16px', fontSize:12, color:'#94A3B8', margin:0 }}>No results</p>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ─── Pre-Approval Modal ───────────────────────────────────────────────────────
 
+const MODAL_PRIORITY = ['AE','IN','SA','US','GB','PK','QA','AU','CA'];
+
 const PreApprovalModal = ({ isOpen, onClose, calculatorData }) => {
-  const [step, setStep] = useState('form');
+  const allCountries = useMemo(() =>
+    Country.getAllCountries()
+      .filter(c => c.phonecode)
+      .map(c => ({ iso: c.isoCode, name: c.name, dialCode: c.phonecode.replace(/[^0-9]/g,'') }))
+      .sort((a,b) => {
+        const ap = MODAL_PRIORITY.indexOf(a.iso), bp = MODAL_PRIORITY.indexOf(b.iso);
+        if (ap!==-1&&bp===-1) return -1; if (ap===-1&&bp!==-1) return 1;
+        if (ap!==-1&&bp!==-1) return ap-bp;
+        return a.name.localeCompare(b.name);
+      }), []);
+
+  const [step, setStep]     = useState('form');
   const [loading, setLoading] = useState(false);
+  const [phoneErr, setPhoneErr] = useState('');
   const [fd, setFd] = useState({
-    firstName:'', lastName:'', phone:'', selectedCountry:COUNTRIES[0], email:'',
+    firstName:'', lastName:'', phone:'', dialIso:'AE', email:'',
     foundProperty:'no', location:'', gender:'Male', dateOfBirth:'',
-    nationality:COUNTRIES[0].name, maritalStatus:'Single'
+    nationalityIso:'AE', maritalStatus:'Single',
+    monthlySalary: calculatorData?.monthlyIncome || '',
+    propValue: calculatorData?.propertyValue || '',
   });
   const upd = p => setFd(s=>({...s,...p}));
 
+  const selectedDial     = allCountries.find(c=>c.iso===fd.dialIso) || allCountries[0];
+  const selectedNationality = allCountries.find(c=>c.iso===fd.nationalityIso) || allCountries[0];
+
+  const validatePhone = (phone, dialCode) => {
+    if (!phone) return 'Phone number is required';
+    const parsed = parsePhoneNumberFromString(`+${dialCode}${phone}`);
+    return (parsed && parsed.isValid()) ? '' : `Invalid number for +${dialCode}`;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (fd.phone.length !== fd.selectedCountry.maxLength) {
-      toast.error(`Please enter a valid ${fd.selectedCountry.maxLength}-digit number for ${fd.selectedCountry.name}.`); return;
-    }
+    const err = validatePhone(fd.phone, selectedDial.dialCode);
+    if (err) { setPhoneErr(err); toast.error(err); return; }
     if (!fd.dateOfBirth) { toast.error('Please enter your date of birth'); return; }
     setLoading(true);
     const tid = toast.loading('Submitting your application...');
     try {
+      const incomVal  = Number(fd.monthlySalary) || 0;
+      const propVal   = Number(fd.propValue)     || 0;
+      const dpVal     = calculatorData.downpayment || 0;
+      const loanVal   = Math.max(0, propVal - dpVal);
       const payload = {
-        customerInfo: { fullName:`${fd.firstName} ${fd.lastName}`, email:fd.email, mobileNumber:fd.phone, gender:fd.gender, dateOfBirth:fd.dateOfBirth, nationality:fd.nationality, maritalStatus:fd.maritalStatus, occupation:calculatorData.employment||'Not specified', monthlySalary:calculatorData.monthlyIncome, numberOfDependents:0 },
-        propertyDetails: { propertyType:fd.foundProperty==='yes'?'Ready':'Off-plan', propertySubtype:'Apartment', propertyValue:calculatorData.propertyValue||0, downPaymentAmount:calculatorData.downpayment||0, loanAmountRequired:calculatorData.loanAmount||0, propertyAddress:{area:fd.location||'',city:fd.location||'Dubai'}, isOffPlan:fd.foundProperty==='no' },
-        loanRequirements: { preferredTenureYears:calculatorData.loanDuration||25, preferredInterestRateType:calculatorData.rate===3.99||calculatorData.rate===4.19?'Fixed':'Variable', feeFinancingPreference:true, lifeInsurancePreference:true, propertyInsurancePreference:true },
-        notesToXoto:`Lead from mortgage calculator. Residency:${calculatorData.residency}. Employment:${calculatorData.employment||'Not specified'}. Income:${calculatorData.monthlyIncome} AED. Debt:${calculatorData.monthlyDebt} AED. Property:${calculatorData.propertyValue} AED. Downpayment:${calculatorData.downpayment} AED.`
+        customerInfo: {
+          firstName: fd.firstName, lastName: fd.lastName,
+          email: fd.email, mobileNumber: fd.phone,
+          countryCode: `+${selectedDial.dialCode}`,
+          gender: fd.gender, dateOfBirth: fd.dateOfBirth,
+          nationality: selectedNationality.name,
+          maritalStatus: fd.maritalStatus,
+          occupation: calculatorData.employment||'Not specified',
+          monthlySalary: incomVal, numberOfDependents: 0
+        },
+        propertyDetails: {
+          propertyType: fd.foundProperty==='yes'?'Ready':'Off-plan', propertySubtype:'Apartment',
+          propertyValue: propVal, downPaymentAmount: dpVal,
+          loanAmountRequired: loanVal,
+          propertyAddress: { area: fd.location||'', city: fd.location||'Dubai' },
+          isOffPlan: fd.foundProperty==='no'
+        },
+        loanRequirements: {
+          preferredTenureYears: calculatorData.loanDuration||25,
+          preferredInterestRateType: calculatorData.rate===3.99||calculatorData.rate===4.19?'Fixed':'Variable',
+          feeFinancingPreference: true, lifeInsurancePreference: true, propertyInsurancePreference: true
+        },
+        notesToXoto: `Mortgage calculator lead. Nationality: ${selectedNationality.name}. Income: ${incomVal} AED. Property: ${propVal} AED.`
       };
       const res = await apiService.post('/vault/lead/website', payload);
-      if (res.success||res.status===200||res.status===201) { toast.success(res.message||'Submitted!',{id:tid}); setStep('success'); }
-      else toast.error(res.message||'Something went wrong.',{id:tid});
+      toast.success(res?.message||'Thank you! Our advisor will contact you within 24 hours.',{id:tid});
+      if (res.success||res.status===200||res.status===201) { setStep('success'); }
     } catch (err) { toast.error(err.response?.data?.message||'Network error.',{id:tid}); }
     finally { setLoading(false); }
   };
@@ -826,9 +937,8 @@ const PreApprovalModal = ({ isOpen, onClose, calculatorData }) => {
         <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:10 }}>
           <div>
             <label style={mLbl}>Nationality *</label>
-            <select value={fd.nationality} onChange={e=>upd({nationality:e.target.value})} style={mSel}>
-              {COUNTRIES.map(c=><option key={c.code} value={c.name}>{c.name}</option>)}
-            </select>
+            <SearchableCountrySelect countries={allCountries} value={fd.nationalityIso}
+              onChange={iso=>upd({nationalityIso:iso})} type="nationality"/>
           </div>
           <div>
             <label style={mLbl}>Marital Status *</label>
@@ -837,24 +947,37 @@ const PreApprovalModal = ({ isOpen, onClose, calculatorData }) => {
             </select>
           </div>
         </div>
+        <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:10 }}>
+          <div>
+            <label style={mLbl}>Monthly Salary (AED) *</label>
+            <input required type="number" min="0" value={fd.monthlySalary}
+              onChange={e=>upd({monthlySalary:e.target.value})}
+              placeholder="e.g. 25000" style={mInp}/>
+          </div>
+          <div>
+            <label style={mLbl}>Property Value (AED)</label>
+            <input type="number" min="0" value={fd.propValue}
+              onChange={e=>upd({propValue:e.target.value})}
+              placeholder="e.g. 1500000" style={mInp}/>
+          </div>
+        </div>
         <div>
           <label style={mLbl}>Phone *</label>
-          <div style={mPhoneWrap}>
-            <div style={mPhoneFlag}>
-              <img src={`https://flagcdn.com/w20/${fd.selectedCountry.code.toLowerCase()}.png`} alt="" style={{ width:18,borderRadius:2 }}/>
-              <select value={fd.selectedCountry.code} onChange={e=>upd({selectedCountry:COUNTRIES.find(c=>c.code===e.target.value),phone:''})}
-                style={{ background:'transparent',border:'none',outline:'none',fontWeight:700,fontSize:12,cursor:'pointer',color:'#4C1D95',width:48,fontFamily:'inherit' }}>
-                {COUNTRIES.map(c=><option key={c.code} value={c.code}>{c.dialCode}</option>)}
-              </select>
+          <div style={{ display:'flex', gap:8, alignItems:'flex-start' }}>
+            <SearchableCountrySelect countries={allCountries} value={fd.dialIso}
+              onChange={iso=>{ upd({dialIso:iso,phone:''}); setPhoneErr(''); }} type="dial"/>
+            <div style={{ flex:1 }}>
+              <input required type="tel" value={fd.phone}
+                onChange={e=>{ upd({phone:e.target.value.replace(/\D/g,'')}); setPhoneErr(''); }}
+                onBlur={()=>setPhoneErr(validatePhone(fd.phone,selectedDial.dialCode))}
+                placeholder="Phone number" style={{ ...mInp, border:`1.5px solid ${phoneErr?'#F87171':'#E9EEF5'}` }}/>
+              {phoneErr&&<p style={{ margin:'3px 0 0 2px',fontSize:11,color:'#EF4444',fontWeight:500 }}>{phoneErr}</p>}
             </div>
-            <input required type="tel" value={fd.phone}
-              onChange={e=>{const v=e.target.value.replace(/\D/g,'');if(v.length<=fd.selectedCountry.maxLength)upd({phone:v});}}
-              placeholder="XX XXX XXXX" style={{ flex:1,padding:'10px 13px',background:'transparent',border:'none',outline:'none',fontWeight:600,fontSize:13,fontFamily:'inherit',color:'#1E293B' }}/>
           </div>
         </div>
         <div><label style={mLbl}>Email *</label><input required type="email" value={fd.email} onChange={e=>upd({email:e.target.value})} placeholder="you@example.com" style={mInp}/></div>
         <div>
-          <label style={{ ...mLbl,marginBottom:8 }}>Found a property? *</label>
+          <label style={{ ...mLbl,marginBottom:8 }}>Found a property?</label>
           <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:8 }}>
             {['yes','no'].map(v=>(
               <label key={v} style={{ display:'flex',alignItems:'center',justifyContent:'center',gap:7,padding:'10px',border:`1.5px solid ${fd.foundProperty===v?'#7C3AED':'#E9EEF5'}`,background:fd.foundProperty===v?'#F5F0FF':'#F8FAFC',borderRadius:10,cursor:'pointer',fontWeight:600,fontSize:12,color:fd.foundProperty===v?'#5C039B':'#64748B' }}>
@@ -873,7 +996,6 @@ const PreApprovalModal = ({ isOpen, onClose, calculatorData }) => {
             </select>
           </div>
         )}
-        {/* Snapshot */}
         <div style={{ background:'linear-gradient(145deg,#3b0764,#5C039B)',borderRadius:12,padding:'14px 16px' }}>
           <p style={{ fontSize:9,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:'#C4B5FD',margin:'0 0 10px' }}>Your Snapshot</p>
           <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:'7px 14px' }}>
@@ -900,15 +1022,29 @@ const PreApprovalModal = ({ isOpen, onClose, calculatorData }) => {
 // ─── Contact / Book a Call Modal ──────────────────────────────────────────────
 
 const ContactModal = ({ isOpen, onClose }) => {
+  const allCountries = useMemo(() =>
+    Country.getAllCountries()
+      .filter(c => c.phonecode)
+      .map(c => ({ iso: c.isoCode, name: c.name, dialCode: c.phonecode.replace(/[^0-9]/g,'') }))
+      .sort((a,b) => {
+        const p = ['AE','IN','SA','US','GB','PK','QA','AU','CA'];
+        const ap = p.indexOf(a.iso), bp = p.indexOf(b.iso);
+        if (ap!==-1&&bp===-1) return -1; if (ap===-1&&bp!==-1) return 1;
+        if (ap!==-1&&bp!==-1) return ap-bp;
+        return a.name.localeCompare(b.name);
+      }), []);
+
   const [step, setStep]         = useState('schedule');
   const [selDate, setSelDate]   = useState(null);
   const [selTime, setSelTime]   = useState(null);
   const [firstName, setFirst]   = useState('');
   const [lastName,  setLast]    = useState('');
   const [phone, setPhone]       = useState('');
-  const [country, setCountry]   = useState(COUNTRIES[0]);
+  const [dialIso, setDialIso]   = useState('AE');
+  const [phoneErr, setPhoneErr] = useState('');
   const days  = ['MON','TUE','WED','THU','FRI'];
   const times = ['9:00 AM','10:00 AM','11:00 AM','2:00 PM','3:00 PM','4:00 PM'];
+  const selectedDial = allCountries.find(c=>c.iso===dialIso) || allCountries[0];
 
   if (step==='success') return (
     <Modal isOpen={isOpen} onClose={onClose} title="Meeting Confirmed!">
@@ -924,7 +1060,7 @@ const ContactModal = ({ isOpen, onClose }) => {
 
   if (step==='details') return (
     <Modal isOpen={isOpen} onClose={()=>setStep('schedule')} title="Your Details" subtitle="Step 2 of 2">
-      <form onSubmit={e=>{e.preventDefault();if(phone.length!==country.maxLength){toast.error(`Please enter a valid ${country.maxLength}-digit number`);return;}setStep('success');}}
+      <form onSubmit={e=>{e.preventDefault();const parsed=parsePhoneNumberFromString(`+${selectedDial.dialCode}${phone}`);if(!parsed||!parsed.isValid()){toast.error(`Invalid number for +${selectedDial.dialCode}`);return;}setStep('success');}}
         style={{ display:'flex',flexDirection:'column',gap:12 }}>
         <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:10 }}>
           <div><label style={mLbl}>First Name</label><input required type="text" value={firstName} onChange={e=>setFirst(e.target.value)} style={mInp}/></div>
@@ -932,17 +1068,15 @@ const ContactModal = ({ isOpen, onClose }) => {
         </div>
         <div>
           <label style={mLbl}>Phone</label>
-          <div style={mPhoneWrap}>
-            <div style={mPhoneFlag}>
-              <img src={`https://flagcdn.com/w20/${country.code.toLowerCase()}.png`} alt="" style={{ width:18,borderRadius:2 }}/>
-              <select value={country.code} onChange={e=>{setCountry(COUNTRIES.find(c=>c.code===e.target.value));setPhone('');}}
-                style={{ background:'transparent',border:'none',outline:'none',fontWeight:700,fontSize:12,cursor:'pointer',color:'#4C1D95',width:48,fontFamily:'inherit' }}>
-                {COUNTRIES.map(c=><option key={c.code} value={c.code}>{c.dialCode}</option>)}
-              </select>
+          <div style={{ display:'flex', gap:8 }}>
+            <SearchableCountrySelect countries={allCountries} value={dialIso}
+              onChange={iso=>{setDialIso(iso);setPhone('');setPhoneErr('');}} type="dial"/>
+            <div style={{ flex:1 }}>
+              <input required type="tel" value={phone}
+                onChange={e=>{setPhone(e.target.value.replace(/\D/g,''));setPhoneErr('');}}
+                placeholder="Phone number" style={{ ...mInp, border:`1.5px solid ${phoneErr?'#F87171':'#E9EEF5'}` }}/>
+              {phoneErr&&<p style={{ margin:'3px 0 0 2px',fontSize:11,color:'#EF4444',fontWeight:500 }}>{phoneErr}</p>}
             </div>
-            <input required type="tel" value={phone}
-              onChange={e=>{const v=e.target.value.replace(/\D/g,'');if(v.length<=country.maxLength)setPhone(v);}}
-              placeholder="XX XXX XXXX" style={{ flex:1,padding:'10px 13px',background:'transparent',border:'none',outline:'none',fontWeight:600,fontSize:13,fontFamily:'inherit',color:'#1E293B' }}/>
           </div>
         </div>
         <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginTop:4 }}>
@@ -998,11 +1132,11 @@ export default function PerfectMortgageCalculator({
   const [activeTab,       setActiveTab]       = useState(initialTab);
   const [residency,       setResidency]       = useState('UAE Resident');
   const [employment,      setEmployment]      = useState('');
-  const [monthlyIncome,   setMonthlyIncome]   = useState(25000);
+  const [monthlyIncome,   setMonthlyIncome]   = useState(0);
   const [monthlyDebt,     setMonthlyDebt]     = useState('');
   const [loanTenure,      setLoanTenure]      = useState(25);
-  const [propertyValue,   setPropertyValue]   = useState(1500000);
-  const [downpayment,     setDownpayment]     = useState(300000);
+  const [propertyValue,   setPropertyValue]   = useState(0);
+  const [downpayment,     setDownpayment]     = useState(0);
   const [selectedProduct, setSelectedProduct] = useState(PRODUCTS[0]);
   const [loanDuration,    setLoanDuration]    = useState(25);
   const [modals, setModals] = useState({ summary:false, preapproval:false, contact:false });
@@ -1061,7 +1195,7 @@ export default function PerfectMortgageCalculator({
     <div className="pmc" style={{
       position:'relative', overflow:'hidden',
       padding: isSep ? '36px 20px 56px' : '28px 16px 44px',
-      background:pageBg,
+      background:pageBg || 'var(--color-body)',
       minHeight: isSep ? '100vh' : undefined,
     }}>
       <style>{CSS}</style>

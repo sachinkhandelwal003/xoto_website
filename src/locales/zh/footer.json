@@ -11,12 +11,12 @@
     "email": "电子邮件"
   },
   "offerings": [
-    { "label": "景观设计", "path": "/landscaping" },
-    { "label": "室内设计", "path": "/services/interior" },
+    { "label": "景观设计", "path": "/service/landscaping" },
+    { "label": "室内设计", "path": "/service/interior" },
     { "label": "租赁", "path": "/Property" },
     { "label": "购买", "path": "/Property" },
     { "label": "出售", "path": "/Property" },
-    { "label": "按揭贷款", "path": "/mortgage/services" }
+    { "label": "按揭贷款", "path": "/service/mortgage" }
     
   ],
   "resources": [

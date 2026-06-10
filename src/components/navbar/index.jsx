@@ -13,33 +13,33 @@ import { logoutUser } from "../../manageApi/store/authSlice";
 
 /* ------------------- LANGUAGE DATA ------------------- */
 export const languages = [
-  { code: "en", name: "EN", Flag: () => (<svg viewBox="0 0 20 15"><rect width="20" height="15" fill="#012169" /></svg>) },
-  { code: "hi", name: "HI", Flag: () => (<svg viewBox="0 0 20 15"><rect width="20" height="5" fill="#FF9933" /><rect y="5" width="20" height="5" fill="#FFF" /><rect y="10" width="20" height="5" fill="#138808" /></svg>) },
-  { code: "ar", name: "AR", Flag: () => (<svg viewBox="0 0 20 15"><rect width="20" height="15" fill="#007A3D" /></svg>) },
-  { code: "ru", name: "RU", Flag: () => (<svg viewBox="0 0 20 15"><rect width="20" height="5" fill="#FFF" /><rect y="5" width="20" height="5" fill="#0039A6" /><rect y="10" width="20" height="5" fill="#D52B1E" /></svg>) },
-  { code: "zh", name: "ZH", Flag: () => (<svg viewBox="0 0 20 15"><rect width="20" height="15" fill="#EE1C25" /></svg>) },
-  { code: "fa", name: "FA", Flag: () => (<svg viewBox="0 0 20 15"><rect width="20" height="5" fill="#239F40" /><rect y="5" width="20" height="5" fill="#FFF" /><rect y="10" width="20" height="5" fill="#DA0000" /></svg>) },
-  { code: "tr", name: "TR", Flag: () => (<svg viewBox="0 0 20 15"><rect width="20" height="15" fill="#E30A17" /></svg>) },
-  { code: "es", name: "ES", Flag: () => (<svg viewBox="0 0 20 15"><rect width="20" height="15" fill="#AA151B" /></svg>) },
-  { code: "pa", name: "PA", Flag: () => (<svg viewBox="0 0 20 15"><rect width="20" height="5" fill="#FF9933" /><rect y="5" width="20" height="5" fill="#FFF" /><rect y="10" width="20" height="5" fill="#138808" /></svg>) },
-  { code: "fr", name: "FR", Flag: () => (<svg viewBox="0 0 20 15"><rect width="6.67" height="15" fill="#002395" /><rect x="6.67" width="6.66" height="15" fill="#FFF" /><rect x="13.33" width="6.67" height="15" fill="#ED2939" /></svg>) },
-  { code: "de", name: "DE", Flag: () => (<svg viewBox="0 0 20 15"><rect width="20" height="5" fill="#000" /><rect y="5" width="20" height="5" fill="#DD0000" /><rect y="10" width="20" height="5" fill="#FFCE00" /></svg>) },
-  { code: "tl", name: "TL", Flag: () => (<svg viewBox="0 0 20 15"><rect width="20" height="7.5" fill="#0038A8" /><rect y="7.5" width="20" height="7.5" fill="#CE1126" /></svg>) },
-  { code: "ur", name: "UR", Flag: () => (<svg viewBox="0 0 20 15"><rect width="20" height="15" fill="#01411C" /></svg>) },
+  { code: "en", name: "EN", flag: <svg viewBox="0 0 20 15"><rect width="20" height="15" fill="#012169" /></svg> },
+  { code: "hi", name: "HI", flag: <svg viewBox="0 0 20 15"><rect width="20" height="5" fill="#FF9933" /><rect y="5" width="20" height="5" fill="#FFF" /><rect y="10" width="20" height="5" fill="#138808" /></svg> },
+  { code: "ar", name: "AR", flag: <svg viewBox="0 0 20 15"><rect width="20" height="15" fill="#007A3D" /></svg> },
+  { code: "ru", name: "RU", flag: <svg viewBox="0 0 20 15"><rect width="20" height="5" fill="#FFF" /><rect y="5" width="20" height="5" fill="#0039A6" /><rect y="10" width="20" height="5" fill="#D52B1E" /></svg> },
+  { code: "zh", name: "ZH", flag: <svg viewBox="0 0 20 15"><rect width="20" height="15" fill="#EE1C25" /></svg> },
+  { code: "fa", name: "FA", flag: <svg viewBox="0 0 20 15"><rect width="20" height="5" fill="#239F40" /><rect y="5" width="20" height="5" fill="#FFF" /><rect y="10" width="20" height="5" fill="#DA0000" /></svg> },
+  { code: "tr", name: "TR", flag: <svg viewBox="0 0 20 15"><rect width="20" height="15" fill="#E30A17" /></svg> },
+  { code: "es", name: "ES", flag: <svg viewBox="0 0 20 15"><rect width="20" height="15" fill="#AA151B" /></svg> },
+  { code: "pa", name: "PA", flag: <svg viewBox="0 0 20 15"><rect width="20" height="5" fill="#FF9933" /><rect y="5" width="20" height="5" fill="#FFF" /><rect y="10" width="20" height="5" fill="#138808" /></svg> },
+  { code: "fr", name: "FR", flag: <svg viewBox="0 0 20 15"><rect width="6.67" height="15" fill="#002395" /><rect x="6.67" width="6.66" height="15" fill="#FFF" /><rect x="13.33" width="6.67" height="15" fill="#ED2939" /></svg> },
+  { code: "de", name: "DE", flag: <svg viewBox="0 0 20 15"><rect width="20" height="5" fill="#000" /><rect y="5" width="20" height="5" fill="#DD0000" /><rect y="10" width="20" height="5" fill="#FFCE00" /></svg> },
+  { code: "tl", name: "TL", flag: <svg viewBox="0 0 20 15"><rect width="20" height="7.5" fill="#0038A8" /><rect y="7.5" width="20" height="7.5" fill="#CE1126" /></svg> },
+  { code: "ur", name: "UR", flag: <svg viewBox="0 0 20 15"><rect width="20" height="15" fill="#01411C" /></svg> },
 ];
 
 /* ------------------- NAV ITEMS ------------------- */
 const navItems = [
   { key: "home", path: "/" },
-  { key: "mortgages", path: "/mortgage/services" },
+  { key: "mortgages", path: "/service/mortgage" },
   // { key: "rental", path: "/rent/search" },
-  { key: "properties", path: "/Property" },
+  { key: "properties", path: "/properties" },
   {
     key: "homeUpgrade",
     children: [
-      { key: "interiors", path: "/services/interior" },
-      { key: "landscaping", path: "/landscaping" },
-      { key: "store", path: "/ecommerce/b2c" },
+      { key: "interiors", path: "/service/interior" },
+      { key: "landscaping", path: "/service/landscaping" },
+      { key: "store", path: "/store" },
     ],
   },
   { key: "ecosystem", path: "/ecosystem" },
@@ -73,6 +73,7 @@ const roleSlugMap = {
 };
 
 const Navbar = () => {
+  const [isClient, setIsClient] = useState(false);
   const { t, i18n } = useTranslation("common");
   const router = useRouter();
   const dispatch = useDispatch();
@@ -80,6 +81,10 @@ const Navbar = () => {
   const { fetchProfile, userProfile } = useContext(AuthContext);
 
   const { user } = useSelector((s) => s.auth);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     if (!user) {
@@ -161,6 +166,10 @@ const Navbar = () => {
     return () => document.removeEventListener("mousedown", close);
   }, []);
 
+  if (!isClient) {
+    return null;
+  }
+
   return (
     <nav className="sticky top-0 z-50 bg-white shadow">
       <div className="max-w-[1440px] mx-auto px-6 py-1">
@@ -222,9 +231,9 @@ const Navbar = () => {
                 onClick={() => setLangOpen(!langOpen)}
                 className="flex items-center gap-2 border px-2 sm:px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                <div className="w-4 h-3">
-                  <selectedLang.Flag />
-                </div>
+                <span className="w-4 h-3">
+                  {selectedLang.flag}
+                </span>
                 <span className="text-sm font-medium">{selectedLang.name}</span>
                 <ChevronDown size={12} />
               </button>
@@ -240,9 +249,9 @@ const Navbar = () => {
                       }}
                       className="flex items-center gap-2 px-4 py-2 hover:bg-purple-50 w-full text-left transition-colors"
                     >
-                      <div className="w-4 h-3">
-                        <lang.Flag />
-                      </div>
+                      <span className="w-4 h-3">
+                        {lang.flag}
+                      </span>
                       {lang.name}
                     </button>
                   ))}
@@ -264,13 +273,13 @@ const Navbar = () => {
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
                     className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-gray-100 border border-transparent hover:border-gray-200 transition-all"
                   >
-                    <div className="w-8 h-8 rounded-full bg-[#5C039B] text-white flex items-center justify-center font-bold">
+                    <span className="w-8 h-8 rounded-full bg-[#5C039B] text-white flex items-center justify-center font-bold">
                       {user.name ? user.name.charAt(0).toUpperCase() : "U"}
-                    </div>
-                    <div className="text-left hidden xl:block">
+                    </span>
+                    <span className="text-left hidden xl:block">
                       <p className="text-sm font-bold text-gray-800 leading-none"> {fullName}</p>
                       <p className="text-xs text-gray-500 uppercase">{user.role?.name || "User"}</p>
-                    </div>
+                    </span>
                     <ChevronDown size={14} className="text-gray-500" />
                   </button>
 

@@ -691,12 +691,12 @@ function PropertyCard({ deal, onClick }) {
               <>
                 <div className="flex items-center gap-2">
                   <img src={bedicon} alt="Beds" className="h-[16px] w-[16px]" />
-                  <span>{deal.bedrooms} <span className="text-[#9CA3AF]">Bedrooms</span></span>
+                  <span>{deal.bedrooms} <span className="text-[#9CA3AF]">{deal.bedroomType}</span></span>
                 </div>
-                <div className="flex items-center gap-2">
+                {/* <div className="flex items-center gap-2">
                   <img src={tubicon} alt="Bath" className="h-[16px] w-[16px]" />
                   <span>{deal.bathrooms} <span className="text-[#9CA3AF]">Bathroom</span></span>
-                </div>
+                </div> */}
               </>
             )}
             <div className="flex items-center gap-2">
@@ -709,7 +709,7 @@ function PropertyCard({ deal, onClick }) {
             onClick={onClick}
             className="w-full h-[48px] bg-[#5C039B] text-white rounded-[30px] font-semibold text-[15px] transition-all hover:bg-[#4a0280]"
           >
-            Show Details
+            Send Enquiry
           </button>
         </div>
       </div>

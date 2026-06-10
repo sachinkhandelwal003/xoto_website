@@ -83,7 +83,7 @@ const AccountantLogin = () => {
       });
 
       setTimeout(() => {
-        navigate(getDashboardPath(roleCode), { replace: true });
+        window.location.href = getDashboardPath(roleCode);
       }, 1800);
     }
   }, [isAuthenticated, user, token, navigate, logout]);

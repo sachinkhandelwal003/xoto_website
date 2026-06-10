@@ -45,7 +45,7 @@ const OtherLogin = () => {
           "12": "/dashboard/supervisor",
         };
         const path = redirectMap[roleCode] || "/dashboard";
-        navigate(path, { replace: true });
+        window.location.href = path;
       }, 2200);
 
       return () => clearTimeout(timer);

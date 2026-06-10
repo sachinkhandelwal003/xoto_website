@@ -13,13 +13,13 @@
   },
 
   "offerings": [
-     { "label": "Mortgages", "path": "/mortgage/services" },
+     { "label": "Mortgages", "path": "/service/mortgage" },
         { "label": "Buy", "path": "/search/buy" },
  
     { "label": "Sell", "path": "/Property" },
     { "label": "Rent", "path": "/rent/search" },
-    { "label": "Interiors", "path": "/services/interior" },
-    { "label": "Landscaping", "path": "/landscaping" },
+    { "label": "Interiors", "path": "/service/interior" },
+    { "label": "Landscaping", "path": "/service/landscaping" },
     { "label": "Calculators", "path": "/mortgages/calculator" }
    
     

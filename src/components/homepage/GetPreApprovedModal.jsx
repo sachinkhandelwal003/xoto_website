@@ -1,87 +1,474 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { FiX } from "react-icons/fi";
 import toast, { Toaster } from "react-hot-toast";
-import { Select } from "antd"; 
 import { Country, State, City } from "country-state-city"; 
+import { parsePhoneNumberFromString } from "libphonenumber-js";
+import { apiService } from "../../manageApi/utils/custom.apiservice";
 
-const { Option } = Select;
+// ─── Enhanced Country Select ───────────────────────────────────────
+const CountrySelect = ({ countries, value, onChange, type = 'dial', placeholder = 'Select', disabled = false }) => {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const ref = useRef(null);
+  const inputRef = useRef(null);
+  
+  const selected = countries.find(c => c.iso === value) || null;
 
-// 1. Strict Phone Length Rules
-const PHONE_LENGTH_RULES = {
-  "971": 9,  // UAE
-  "91": 10,  // India
-  "966": 9,  // KSA
-  "1": 10,   // US
-  "44": 10,  // UK
-  "61": 9,   // Australia
+  const filtered = search
+    ? countries.filter(c =>
+        c.name.toLowerCase().includes(search.toLowerCase()) ||
+        (c.code && c.code.includes(search.replace(/\D/g, '')))
+      )
+    : countries;
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) { setOpen(false); setSearch(''); } };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [open]);
+
+  useEffect(() => { if (open) setTimeout(() => inputRef.current?.focus(), 30); }, [open]);
+
+  const triggerStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    padding: '0 12px',
+    height: '46px',
+    width: '100%',
+    background: disabled ? '#F3F4F6' : '#F9FAFB',
+    border: '1px solid #E5E7EB',
+    borderRadius: '12px',
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    fontFamily: 'inherit',
+    whiteSpace: 'nowrap',
+    transition: 'all 0.2s',
+    opacity: disabled ? 0.6 : 1,
+  };
+
+  return (
+    <div ref={ref} style={{ position: 'relative', width: '100%' }}>
+      <button
+        type="button"
+        onClick={() => !disabled && setOpen(o => !o)}
+        style={triggerStyle}
+        onMouseEnter={e => { if (!disabled) { e.currentTarget.style.borderColor = '#A855F7'; e.currentTarget.style.background = '#FAF5FF'; } }}
+        onMouseLeave={e => { if (!disabled) { e.currentTarget.style.borderColor = '#E5E7EB'; e.currentTarget.style.background = '#F9FAFB'; } }}
+      >
+        {selected ? (
+          <>
+            <img 
+              src={`https://flagcdn.com/w20/${selected.iso.toLowerCase()}.png`} 
+              alt="" 
+              style={{ width: 20, height: 15, borderRadius: 2, objectFit: 'cover' }}
+              onError={(e) => { e.target.src = 'https://flagcdn.com/w20/un.png'; }}
+            />
+            {type === 'dial' ? (
+              <span style={{ fontWeight: 600, fontSize: 14, color: '#374151' }}>+{selected.code}</span>
+            ) : (
+              <span style={{ fontWeight: 500, fontSize: 13, color: '#374151', flex: 1, textAlign: 'left' }}>
+                {selected.name}
+              </span>
+            )}
+            <span style={{ color: '#9CA3AF', fontSize: 10, marginLeft: 'auto' }}>▼</span>
+          </>
+        ) : (
+          <span style={{ color: '#9CA3AF', fontSize: 13, flex: 1, textAlign: 'left' }}>{placeholder}</span>
+        )}
+      </button>
+
+      {open && !disabled && (
+        <div style={{
+          position: 'absolute',
+          top: 'calc(100% + 5px)',
+          left: 0,
+          width: '100%',
+          minWidth: 260,
+          background: '#fff',
+          border: '1px solid #E5E7EB',
+          borderRadius: 12,
+          boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
+          zIndex: 1000,
+          overflow: 'hidden',
+        }}>
+          <div style={{ padding: 10, borderBottom: '1px solid #F3F4F6' }}>
+            <input
+              ref={inputRef}
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search..."
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                border: '1px solid #E5E7EB',
+                borderRadius: 8,
+                fontSize: 13,
+                outline: 'none',
+                fontFamily: 'inherit',
+                boxSizing: 'border-box',
+              }}
+              onFocus={e => e.target.style.borderColor = '#A855F7'}
+              onBlur={e => e.target.style.borderColor = '#E5E7EB'}
+            />
+          </div>
+          <div style={{ maxHeight: 240, overflowY: 'auto' }}>
+            {filtered.slice(0, 100).map(c => (
+              <button
+                key={c.iso}
+                type="button"
+                onClick={() => { onChange(c.iso); setOpen(false); setSearch(''); }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  width: '100%',
+                  padding: '10px 14px',
+                  background: c.iso === value ? '#F3E8FF' : 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  textAlign: 'left',
+                  transition: 'background 0.15s',
+                }}
+                onMouseEnter={e => { if (c.iso !== value) e.currentTarget.style.background = '#FAF5FF'; }}
+                onMouseLeave={e => { if (c.iso !== value) e.currentTarget.style.background = 'transparent'; }}
+              >
+                <img 
+                  src={`https://flagcdn.com/w20/${c.iso.toLowerCase()}.png`} 
+                  alt="" 
+                  style={{ width: 20, height: 15, borderRadius: 2, objectFit: 'cover' }}
+                  onError={(e) => { e.target.src = 'https://flagcdn.com/w20/un.png'; }}
+                />
+                <span style={{ fontSize: 13, fontWeight: 500, color: '#1F2937', flex: 1 }}>{c.name}</span>
+                {type === 'dial' && c.code && (
+                  <span style={{ fontSize: 12, fontWeight: 600, color: '#8B5CF6' }}>+{c.code}</span>
+                )}
+              </button>
+            ))}
+            {filtered.length === 0 && (
+              <p style={{ padding: '16px', fontSize: 12, color: '#9CA3AF', textAlign: 'center', margin: 0 }}>No results found</p>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── State Select Component ────────────────────────────────────────────────
+const StateSelect = ({ states, value, onChange, disabled = false, required = false }) => {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const ref = useRef(null);
+  const inputRef = useRef(null);
+  
+  const selected = states.find(s => s.isoCode === value) || null;
+
+  const filtered = search
+    ? states.filter(s => s.name.toLowerCase().includes(search.toLowerCase()))
+    : states;
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) { setOpen(false); setSearch(''); } };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [open]);
+
+  useEffect(() => { if (open) setTimeout(() => inputRef.current?.focus(), 30); }, [open]);
+
+  return (
+    <div ref={ref} style={{ position: 'relative', width: '100%' }}>
+      <button
+        type="button"
+        onClick={() => !disabled && setOpen(o => !o)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 8,
+          padding: '0 12px',
+          height: '46px',
+          width: '100%',
+          background: disabled ? '#F3F4F6' : '#F9FAFB',
+          border: `1px solid ${required && !value && !disabled ? '#EF4444' : '#E5E7EB'}`,
+          borderRadius: '12px',
+          cursor: disabled ? 'not-allowed' : 'pointer',
+          fontFamily: 'inherit',
+          transition: 'all 0.2s',
+          opacity: disabled ? 0.6 : 1,
+        }}
+        onMouseEnter={e => { if (!disabled) { e.currentTarget.style.borderColor = '#A855F7'; e.currentTarget.style.background = '#FAF5FF'; } }}
+        onMouseLeave={e => { if (!disabled) { e.currentTarget.style.borderColor = required && !value ? '#EF4444' : '#E5E7EB'; e.currentTarget.style.background = '#F9FAFB'; } }}
+      >
+        <span style={{ fontWeight: 500, fontSize: 13, color: selected ? '#374151' : '#9CA3AF', textAlign: 'left' }}>
+          {selected ? selected.name : 'Select State / Region'}
+          {required && <span style={{ color: '#EF4444', marginLeft: 4 }}>*</span>}
+        </span>
+        <span style={{ color: '#9CA3AF', fontSize: 10 }}>▼</span>
+      </button>
+
+      {open && !disabled && states.length > 0 && (
+        <div style={{
+          position: 'absolute',
+          top: 'calc(100% + 5px)',
+          left: 0,
+          width: '100%',
+          background: '#fff',
+          border: '1px solid #E5E7EB',
+          borderRadius: 12,
+          boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
+          zIndex: 1000,
+          overflow: 'hidden',
+        }}>
+          <div style={{ padding: 10, borderBottom: '1px solid #F3F4F6' }}>
+            <input
+              ref={inputRef}
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search state..."
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                border: '1px solid #E5E7EB',
+                borderRadius: 8,
+                fontSize: 13,
+                outline: 'none',
+                fontFamily: 'inherit',
+                boxSizing: 'border-box',
+              }}
+            />
+          </div>
+          <div style={{ maxHeight: 240, overflowY: 'auto' }}>
+            {filtered.map(state => (
+              <button
+                key={state.isoCode}
+                type="button"
+                onClick={() => { onChange(state.isoCode); setOpen(false); setSearch(''); }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  width: '100%',
+                  padding: '10px 14px',
+                  background: state.isoCode === value ? '#F3E8FF' : 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  textAlign: 'left',
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = '#FAF5FF'}
+                onMouseLeave={e => { if (state.isoCode !== value) e.currentTarget.style.background = 'transparent'; }}
+              >
+                <span style={{ fontSize: 13, fontWeight: 500, color: '#1F2937' }}>{state.name}</span>
+              </button>
+            ))}
+            {filtered.length === 0 && (
+              <p style={{ padding: '16px', fontSize: 12, color: '#9CA3AF', textAlign: 'center' }}>No states found</p>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── City Select Component ────────────────────────────────────────────────
+const CitySelect = ({ cities, value, onChange, disabled = false, required = false }) => {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const ref = useRef(null);
+  const inputRef = useRef(null);
+  
+  const selected = cities.find(c => c.name === value) || null;
+
+  const filtered = search
+    ? cities.filter(c => c.name.toLowerCase().includes(search.toLowerCase()))
+    : cities;
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) { setOpen(false); setSearch(''); } };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [open]);
+
+  useEffect(() => { if (open) setTimeout(() => inputRef.current?.focus(), 30); }, [open]);
+
+  return (
+    <div ref={ref} style={{ position: 'relative', width: '100%' }}>
+      <button
+        type="button"
+        onClick={() => !disabled && setOpen(o => !o)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 8,
+          padding: '0 12px',
+          height: '46px',
+          width: '100%',
+          background: disabled ? '#F3F4F6' : '#F9FAFB',
+          border: `1px solid ${required && !value && !disabled ? '#EF4444' : '#E5E7EB'}`,
+          borderRadius: '12px',
+          cursor: disabled ? 'not-allowed' : 'pointer',
+          fontFamily: 'inherit',
+          transition: 'all 0.2s',
+          opacity: disabled ? 0.6 : 1,
+        }}
+        onMouseEnter={e => { if (!disabled) { e.currentTarget.style.borderColor = '#A855F7'; e.currentTarget.style.background = '#FAF5FF'; } }}
+        onMouseLeave={e => { if (!disabled) { e.currentTarget.style.borderColor = required && !value ? '#EF4444' : '#E5E7EB'; e.currentTarget.style.background = '#F9FAFB'; } }}
+      >
+        <span style={{ fontWeight: 500, fontSize: 13, color: selected ? '#374151' : '#9CA3AF', textAlign: 'left' }}>
+          {selected ? selected.name : 'Select City'}
+          {required && <span style={{ color: '#EF4444', marginLeft: 4 }}>*</span>}
+        </span>
+        <span style={{ color: '#9CA3AF', fontSize: 10 }}>▼</span>
+      </button>
+
+      {open && !disabled && cities.length > 0 && (
+        <div style={{
+          position: 'absolute',
+          top: 'calc(100% + 5px)',
+          left: 0,
+          width: '100%',
+          background: '#fff',
+          border: '1px solid #E5E7EB',
+          borderRadius: 12,
+          boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
+          zIndex: 1000,
+          overflow: 'hidden',
+        }}>
+          <div style={{ padding: 10, borderBottom: '1px solid #F3F4F6' }}>
+            <input
+              ref={inputRef}
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search city..."
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                border: '1px solid #E5E7EB',
+                borderRadius: 8,
+                fontSize: 13,
+                outline: 'none',
+                fontFamily: 'inherit',
+                boxSizing: 'border-box',
+              }}
+            />
+          </div>
+          <div style={{ maxHeight: 240, overflowY: 'auto' }}>
+            {filtered.map(city => (
+              <button
+                key={city.name}
+                type="button"
+                onClick={() => { onChange(city.name); setOpen(false); setSearch(''); }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  width: '100%',
+                  padding: '10px 14px',
+                  background: city.name === value ? '#F3E8FF' : 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  textAlign: 'left',
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = '#FAF5FF'}
+                onMouseLeave={e => { if (city.name !== value) e.currentTarget.style.background = 'transparent'; }}
+              >
+                <span style={{ fontSize: 13, fontWeight: 500, color: '#1F2937' }}>{city.name}</span>
+              </button>
+            ))}
+            {filtered.length === 0 && (
+              <p style={{ padding: '16px', fontSize: 12, color: '#9CA3AF', textAlign: 'center' }}>No cities found</p>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default function GetPreApprovedModal({ open, onClose }) {
   const [loading, setLoading] = useState(false);
-  
-  // 2. Errors State
   const [errors, setErrors] = useState({});
-
-  // 3. Form State
+  
   const [form, setForm] = useState({
     name: "",
     phone: "",
     email: "",
     foundProperty: "No",
-    contact: "WhatsApp", // ✅ Default single selection
-    marketing: false,    // ✅ Track Marketing Checkbox
-    terms: false,        // ✅ Track Terms Checkbox
-    country_code: "971", 
-    location_country: null, 
-    state: null,           
-    city: null             
+    contact: "WhatsApp",
+    marketing: false,
+    terms: false,
+    phone_country_iso: "AE",
+    location_country: null,
+    state: null,
+    city: null
   });
 
-  // 4. Location Data States
   const [countriesList] = useState(Country.getAllCountries());
   const [statesList, setStatesList] = useState([]);
   const [citiesList, setCitiesList] = useState([]);
 
-  // 5. Memoized Country Options for Phone Code
   const phoneCountryOptions = useMemo(() => {
     const priorityIsoCodes = ["AE", "IN", "SA", "US", "GB", "AU"];
-    return Country.getAllCountries().map((country) => ({
-      name: country.name,
-      code: country.phonecode,
-      iso: country.isoCode,
-    })).sort((a, b) => {
-      const aPriority = priorityIsoCodes.includes(a.iso);
-      const bPriority = priorityIsoCodes.includes(b.iso);
-      if (aPriority && !bPriority) return -1;
-      if (!aPriority && bPriority) return 1;
-      return a.name.localeCompare(b.name);
-    });
+    return Country.getAllCountries()
+      .filter(c => c.phonecode)
+      .map((country) => ({
+        name: country.name,
+        code: country.phonecode.replace(/[^0-9]/g, ''),
+        iso: country.isoCode,
+      }))
+      .sort((a, b) => {
+        const aPriority = priorityIsoCodes.includes(a.iso);
+        const bPriority = priorityIsoCodes.includes(b.iso);
+        if (aPriority && !bPriority) return -1;
+        if (!aPriority && bPriority) return 1;
+        return a.name.localeCompare(b.name);
+      });
   }, []);
 
-  if (!open) return null;
+  const locationCountryOptions = useMemo(() => {
+    return countriesList.map((country) => ({
+      name: country.name,
+      code: country.phonecode || '',
+      iso: country.isoCode,
+    })).sort((a, b) => a.name.localeCompare(b.name));
+  }, [countriesList]);
 
-  // --- HANDLERS ---
+  const selectedPhoneCountry = useMemo(() => {
+    return phoneCountryOptions.find(c => c.iso === form.phone_country_iso) || phoneCountryOptions.find(c => c.iso === 'AE');
+  }, [form.phone_country_iso, phoneCountryOptions]);
+
+  useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [open]);
+
+  if (!open) return null;
 
   const handleInputChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
-  const handleCountryCodeChange = (value) => {
-    const limit = PHONE_LENGTH_RULES[value] || 15;
-    setForm((prev) => ({ ...prev, country_code: value, phone: prev.phone.slice(0, limit) }));
+  const handlePhoneCountryChange = (isoCode) => {
+    setForm((prev) => ({ ...prev, phone_country_iso: isoCode, phone: "" }));
+    if (errors.phone) setErrors((prev) => ({ ...prev, phone: "" }));
   };
 
   const handlePhoneChange = (e) => {
     const value = e.target.value.replace(/\D/g, "");
-    const maxLength = PHONE_LENGTH_RULES[form.country_code] || 15;
-    const validatedValue = value.slice(0, maxLength);
-    setForm((prev) => ({ ...prev, phone: validatedValue }));
+    setForm((prev) => ({ ...prev, phone: value }));
     if (errors.phone) setErrors((prev) => ({ ...prev, phone: "" }));
   };
 
-  // Location Cascade Handlers
-  const handleLocationCountryChange = (isoCode) => {  
+  const handleLocationCountryChange = (isoCode) => {
     const updatedStates = State.getStatesOfCountry(isoCode);
     setStatesList(updatedStates);
     setCitiesList([]);
@@ -101,32 +488,59 @@ export default function GetPreApprovedModal({ open, onClose }) {
     if (errors.city) setErrors((prev) => ({ ...prev, city: "" }));
   };
 
-  // --- VALIDATION ---
+  const validatePhone = (phone, dialCode) => {
+    if (!phone) return 'Phone number is required';
+    if (phone.length < 5) return 'Phone number too short';
+    return '';
+  };
+
+  // ✅ CORRECT VALIDATION - Location required ONLY if property found
   const validateForm = () => {
     let newErrors = {};
     let isValid = true;
 
-    if (!form.name.trim()) { newErrors.name = "Full Name is required"; isValid = false; }
+    // Basic validations
+    if (!form.name.trim()) { 
+      newErrors.name = "Full Name is required"; 
+      isValid = false; 
+    }
     
-    if (!form.email.trim()) { newErrors.email = "Email is required"; isValid = false; }
-    else if (!/\S+@\S+\.\S+/.test(form.email)) { newErrors.email = "Invalid email format"; isValid = false; }
+    if (!form.email.trim()) { 
+      newErrors.email = "Email is required"; 
+      isValid = false; 
+    } else if (!/\S+@\S+\.\S+/.test(form.email)) { 
+      newErrors.email = "Invalid email format"; 
+      isValid = false; 
+    }
 
-    const requiredLength = PHONE_LENGTH_RULES[form.country_code];
-    if (!form.phone.trim()) { newErrors.phone = "Phone is required"; isValid = false; }
-    else if (requiredLength && form.phone.length !== requiredLength) {
-      newErrors.phone = `Enter exactly ${requiredLength} digits`;
+    const phoneErr = validatePhone(form.phone, selectedPhoneCountry.code);
+    if (phoneErr) {
+      newErrors.phone = phoneErr;
       isValid = false;
     }
 
-    if (!form.location_country) { newErrors.location_country = "Country is required"; isValid = false; }
-    if (!form.state) { newErrors.state = "State is required"; isValid = false; }
-    if (citiesList.length > 0 && !form.city) { newErrors.city = "City is required"; isValid = false; }
+    // ✅ CRITICAL: Location validation based on foundProperty
+    if (form.foundProperty === "Yes") {
+      // If they found a property, location is REQUIRED
+      if (!form.location_country) { 
+        newErrors.location_country = "Country is required when you've found a property"; 
+        isValid = false; 
+      }
+      if (!form.state) { 
+        newErrors.state = "State/Region is required when you've found a property"; 
+        isValid = false; 
+      }
+      if (citiesList.length > 0 && !form.city) { 
+        newErrors.city = "City is required when you've found a property"; 
+        isValid = false; 
+      }
+    }
+    // If foundProperty === "No", location is OPTIONAL - no validation needed
 
     setErrors(newErrors);
     return isValid;
   };
 
-  // --- SUBMIT ---
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
@@ -148,75 +562,95 @@ export default function GetPreApprovedModal({ open, onClose }) {
     const selectedStateData = State.getStateByCodeAndCountry(form.state, form.location_country);
     const stateName = selectedStateData ? selectedStateData.name : form.state;
 
+    // ✅ Build location string based on foundProperty
+    const locationString = form.foundProperty === "Yes" && form.location_country
+      ? `${form.city || ""}${form.city && stateName ? ", " : ""}${stateName || ""}${(form.city || stateName) && countryName ? ", " : ""}${countryName || ""}`.replace(/^, /, '').replace(/,,/g, ',').trim()
+      : "Not specified (browsing)";
+
     const payload = {
-      type: "mortgage",
-      lead_sub_type: "pre_approval",
-      name: { first_name, last_name },
-      mobile: { country_code: form.country_code, number: form.phone },
-      email: form.email.toLowerCase().trim(),
-      has_property: form.foundProperty === "Yes",
-      country: countryName,
-      state: stateName,
-      city: form.city, 
-      preferred_city: form.city || stateName, 
-      preferred_contact: form.contact.toLowerCase(), // ✅ Using the single string state
+      customerInfo: {
+        firstName: first_name,
+        lastName: last_name,
+        email: form.email.toLowerCase().trim(),
+        countryCode: `+${selectedPhoneCountry.code}`,
+        mobileNumber: form.phone,
+        gender: "Not specified",
+        nationality: countryName || "Not specified",
+        maritalStatus: "Not specified",
+        occupation: form.foundProperty === "Yes" ? "Home Seeker" : "Browsing",
+      },
+      propertyDetails: {
+        propertyFound: form.foundProperty === "Yes",
+        propertyType: form.foundProperty === "Yes" ? "Ready" : "Off-plan",
+        propertySubtype: "Apartment",
+        propertyValue: null,
+        downPaymentAmount: null,
+        loanAmountRequired: null,
+        propertyAddress: {
+          building: null,
+          area: form.foundProperty === "Yes" ? stateName : null,
+          city: form.foundProperty === "Yes" ? (form.city || stateName) : null,
+        },
+        isOffPlan: form.foundProperty === "No",
+        completionDate: null,
+      },
+      loanRequirements: {
+        timeline: form.foundProperty === "Yes" ? "Immediately" : "3-6 months",
+        preferredTenureYears: 25,
+        preferredInterestRateType: "Fixed",
+        preferredBanks: [],
+        feeFinancingPreference: true,
+        lifeInsurancePreference: true,
+        propertyInsurancePreference: true,
+        specialRequirements: null,
+      },
+      notesToXoto: `Pre-Approval Lead from Website.
+Contact Preference: ${form.contact}
+Found Property: ${form.foundProperty}
+Property Location: ${locationString}
+Marketing Consent: ${form.marketing ? "Yes" : "No"}
+Terms Accepted: Yes`,
       terms_accepted: form.terms,
       marketing_consent: form.marketing,
-      status: "submit",
+      preferred_contact: form.contact.toLowerCase(),
     };
 
     try {
-      const response = await fetch("https://xoto.ae/api/property/lead/create-mortgage-lead", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const response = await apiService.post('/vault/lead/website', payload);
 
-      const text = await response.text();
-      const result = text ? JSON.parse(text) : {};
-
-      if (response.ok) {
+      const msg = response?.message || "Thank you! Our advisor will contact you within 24 hours.";
+      toast.success(msg);
+      if (response.success || response.status === 200 || response.status === 201) {
         const updatedEmails = [...submittedEmails, form.email.toLowerCase().trim()];
         localStorage.setItem("submitted_leads", JSON.stringify(updatedEmails));
-        toast.success("Success! Lead Created.");
-        
-        // --- DATA RESET LOGIC ---
         setForm({
           name: "", phone: "", email: "", foundProperty: "No", contact: "WhatsApp",
-          marketing: false, terms: false, country_code: "971", 
-          location_country: null, state: null, city: null 
+          marketing: false, terms: false, phone_country_iso: "AE",
+          location_country: null, state: null, city: null
         });
-
         setTimeout(() => onClose(), 1500);
-      } else {
-        let errorMessage = "Something went wrong";
-        if (result.errors && Array.isArray(result.errors) && result.errors.length > 0) {
-           errorMessage = result.errors[0].message || result.errors[0].msg;
-        } else if (result.message) {
-           errorMessage = result.message;
-        }
-        
-        if (response.status === 400 && errorMessage.toLowerCase().includes("already")) {
-           toast.error("You already have created a lead within last 30 days.");
-        } else {
-           toast.error(errorMessage);
-        }
       }
     } catch (error) {
       console.error("API Error:", error);
-      toast.error("Submission failed. Check internet connection.");
+      const msg = error.response?.data?.message || "Submission failed. Check internet connection.";
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
   };
 
+  const isLocationRequired = form.foundProperty === "Yes";
+
   return (
     <div className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm overflow-y-auto">
       <Toaster position="top-center" reverseOrder={false} />
       
-<div className="flex min-h-screen items-start justify-center pt-24 pb-8 px-4">
-<div className="relative w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden text-black max-h-[85vh]">          <div className="absolute inset-0 bg-gradient-to-br from-[#f4f1ff] via-white to-[#e9fbff]" />
-<div className="relative bg-white rounded-3xl px-5 py-6 sm:px-6 sm:py-8 md:px-8 md:py-8 overflow-y-auto max-h-[85vh]">            <button onClick={onClose} className="absolute right-4 top-4 sm:right-6 sm:top-6 p-2 rounded-full hover:bg-gray-100">
+      <div className="flex min-h-screen items-start justify-center pt-24 pb-8 px-4">
+        <div className="relative w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden text-black max-h-[85vh]">
+          <div className="absolute inset-0 bg-gradient-to-br from-[#f4f1ff] via-white to-[#e9fbff]" />
+          
+          <div className="relative bg-white rounded-3xl px-5 py-6 sm:px-6 sm:py-8 md:px-8 md:py-8 overflow-y-auto max-h-[85vh]">
+            <button onClick={onClose} className="absolute right-4 top-4 sm:right-6 sm:top-6 p-2 rounded-full hover:bg-gray-100 transition">
               <FiX className="text-xl" />
             </button>
 
@@ -227,59 +661,42 @@ export default function GetPreApprovedModal({ open, onClose }) {
               {/* Name & Phone Row */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
                 <div>
-                  <label className="block text-left mb-1 font-medium"> Full Name <span className="text-red-500">*</span></label>
+                  <label className="block text-left mb-1 font-medium">Full Name <span className="text-red-500">*</span></label>
                   <input
                     value={form.name}
                     onChange={(e) => handleInputChange("name", e.target.value)}
                     placeholder="E.g.: John Doe"
-                    className={`w-full px-4 py-3 rounded-xl border outline-none focus:ring-2 focus:ring-purple-500 ${errors.name ? "border-red-500 bg-red-50" : "border-gray-300"}`}
+                    className={`w-full px-4 py-3 rounded-xl border outline-none focus:ring-2 focus:ring-purple-500 transition-all ${errors.name ? "border-red-500 bg-red-50" : "border-gray-300"}`}
                   />
                   {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
                 </div>
 
                 <div>
                   <label className="block text-left mb-1 font-medium">Phone number <span className="text-red-500">*</span></label>
-                  <div className="flex gap-2">
-                    <div className="w-[110px] sm:w-[130px] flex-shrink-0">
-                      <Select
-                        value={form.country_code}
-                        onChange={handleCountryCodeChange}
-                        showSearch
-                        optionFilterProp="children"
-                        filterOption={(input, option) => 
-                          option.children.props?.children[1]?.props?.children[1]?.toLowerCase().includes(input.toLowerCase()) || 
-                          option.value.includes(input)
-                        }
-                        className="w-full custom-select-modal"
-                        style={{ width: '100%' }}
-                        dropdownMatchSelectWidth={300}
-                      >
-                        {phoneCountryOptions.map((item) => (
-                          <Option key={item.iso} value={item.code}>
-                            <div className="flex items-center">
-                              <img 
-                                src={`https://flagcdn.com/w20/${item.iso.toLowerCase()}.png`} 
-                                srcSet={`https://flagcdn.com/w40/${item.iso.toLowerCase()}.png 2x`} 
-                                width="20" alt={item.name} 
-                                style={{ marginRight: 8, borderRadius: 2, objectFit: 'cover' }} 
-                              />
-                              <span>+{item.code}</span>
-                            </div>
-                          </Option>
-                        ))}
-                      </Select>
+                  <div className="flex gap-2 items-start">
+                    <div className="w-[110px]">
+                      <CountrySelect
+                        countries={phoneCountryOptions}
+                        value={form.phone_country_iso}
+                        onChange={handlePhoneCountryChange}
+                        type="dial"
+                      />
                     </div>
                     <div className="flex-1">
                       <input
                         value={form.phone}
                         onChange={handlePhoneChange}
+                        onBlur={() => {
+                          const err = validatePhone(form.phone, selectedPhoneCountry.code);
+                          if (err) setErrors(prev => ({ ...prev, phone: err }));
+                        }}
                         placeholder="Mobile Number"
-                        className={`w-full px-4 py-3 h-[46px] rounded-xl border outline-none focus:ring-2 focus:ring-purple-500 ${errors.phone ? "border-red-500 bg-red-50" : "border-gray-300"}`}
+                        className={`w-full px-4 py-3 h-[46px] rounded-xl border outline-none focus:ring-2 focus:ring-purple-500 transition-all ${errors.phone ? "border-red-500 bg-red-50" : "border-gray-300 bg-white"}`}
                         inputMode="numeric"
                       />
+                      {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
                     </div>
                   </div>
-                  {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
                 </div>
               </div>
 
@@ -290,84 +707,83 @@ export default function GetPreApprovedModal({ open, onClose }) {
                   value={form.email}
                   onChange={(e) => handleInputChange("email", e.target.value)}
                   placeholder="E.g.: john@gmail.com"
-                  className={`w-full px-4 py-3 rounded-xl border outline-none focus:ring-2 focus:ring-purple-500 ${errors.email ? "border-red-500 bg-red-50" : "border-gray-300"}`}
+                  className={`w-full px-4 py-3 rounded-xl border outline-none focus:ring-2 focus:ring-purple-500 transition-all ${errors.email ? "border-red-500 bg-red-50" : "border-gray-300"}`}
                 />
                 {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
               </div>
 
-              {/* LOCATION SECTION */}
+              {/* Found Property - MOVED BEFORE LOCATION */}
               <div>
-                 <label className="block text-left mb-2 font-medium">Property Location <span className="text-red-500">*</span></label>
-                 <div className="space-y-4">
-                    <div>
-                      <Select
-                        placeholder="Select Country"
-                        showSearch
-                        optionFilterProp="children"
-                        onChange={handleLocationCountryChange}
-                        className={`w-full custom-select-modal ${errors.location_country ? "border-red-500" : ""}`}
-                        style={{ width: '100%' }}
-                        filterOption={(input, option) => option.children.toLowerCase().includes(input.toLowerCase())}
-                      >
-                        {countriesList.map((country) => (
-                          <Option key={country.isoCode} value={country.isoCode}>{country.name}</Option>
-                        ))}
-                      </Select>
-                      {errors.location_country && <p className="text-red-500 text-xs mt-1">{errors.location_country}</p>}
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <Select
-                            placeholder="State / Region"
-                            showSearch
-                            optionFilterProp="children"
-                            onChange={handleLocationStateChange}
-                            disabled={!statesList.length}
-                            className={`w-full custom-select-modal ${errors.state ? "border-red-500" : ""}`}
-                            style={{ width: '100%' }}
-                            filterOption={(input, option) => option.children.toLowerCase().includes(input.toLowerCase())}
-                          >
-                            {statesList.map((state) => (
-                              <Option key={state.isoCode} value={state.isoCode}>{state.name}</Option>
-                            ))}
-                          </Select>
-                          {errors.state && <p className="text-red-500 text-xs mt-1">{errors.state}</p>}
-                        </div>
-
-                        <div>
-                          <Select
-                            placeholder="City"
-                            showSearch
-                            optionFilterProp="children"
-                            onChange={handleLocationCityChange}
-                            disabled={!citiesList.length}
-                            className={`w-full custom-select-modal ${errors.city ? "border-red-500" : ""}`}
-                            style={{ width: '100%' }}
-                            filterOption={(input, option) => option.children.toLowerCase().includes(input.toLowerCase())}
-                          >
-                            {citiesList.map((city) => (
-                              <Option key={city.name} value={city.name}>{city.name}</Option>
-                            ))}
-                          </Select>
-                          {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
-                        </div>
-                    </div>
-                 </div>
-              </div>
-
-              <div>
-                <label className="block text-left mb-2 font-medium">Have you found a property? <span className="text-red-500">*</span></label>
+                <label className="block text-left mb-2 font-medium">Have you found a property?</label>
                 <div className="flex gap-6">
                   {["Yes", "No"].map((v) => (
                     <label key={v} className="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" checked={form.foundProperty === v} onChange={() => setForm({ ...form, foundProperty: v })} /> {v}
+                      <input 
+                        type="radio" 
+                        checked={form.foundProperty === v} 
+                        onChange={() => {
+                          setForm({ ...form, foundProperty: v });
+                          // Clear location errors when switching to "No"
+                          if (v === "No") {
+                            setErrors(prev => ({ ...prev, location_country: "", state: "", city: "" }));
+                          }
+                        }} 
+                        className="w-4 h-4 accent-purple-600"
+                      /> 
+                      <span className="text-sm">{v}</span>
                     </label>
                   ))}
                 </div>
               </div>
 
-              {/* ✅ CONTACT PREFERENCE (Now Radio Buttons) */}
+              {/* PROPERTY LOCATION - Conditional Required */}
+              <div>
+                <label className="block text-left mb-2 font-medium">
+                  Property Location 
+                  {isLocationRequired && <span className="text-red-500 ml-1">*</span>}
+                  {!isLocationRequired && (
+                    <span className="text-gray-400 text-xs ml-2 font-normal">(Optional - only if you've found a property)</span>
+                  )}
+                </label>
+                <div className="space-y-4">
+                  <div>
+                    <CountrySelect
+                      countries={locationCountryOptions}
+                      value={form.location_country}
+                      onChange={handleLocationCountryChange}
+                      type="country"
+                      placeholder="Select Country"
+                    />
+                    {errors.location_country && <p className="text-red-500 text-xs mt-1">{errors.location_country}</p>}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <StateSelect
+                        states={statesList}
+                        value={form.state}
+                        onChange={handleLocationStateChange}
+                        disabled={!statesList.length}
+                        required={isLocationRequired && !!form.location_country}
+                      />
+                      {errors.state && <p className="text-red-500 text-xs mt-1">{errors.state}</p>}
+                    </div>
+
+                    <div>
+                      <CitySelect
+                        cities={citiesList}
+                        value={form.city}
+                        onChange={handleLocationCityChange}
+                        disabled={!citiesList.length}
+                        required={isLocationRequired && !!form.state}
+                      />
+                      {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Contact Preference */}
               <div>
                 <label className="block text-left mb-2 font-medium">How do you prefer to be contacted?</label>
                 <div className="flex gap-6 flex-wrap">
@@ -377,53 +793,52 @@ export default function GetPreApprovedModal({ open, onClose }) {
                         type="radio" 
                         name="contact_pref"
                         checked={form.contact === v} 
-                        onChange={() => setForm({...form, contact: v})} 
-                      /> {v}
+                        onChange={() => setForm({...form, contact: v})}
+                        className="w-4 h-4 accent-purple-600"
+                      /> 
+                      <span className="text-sm">{v}</span>
                     </label>
                   ))}
                 </div>
               </div>
 
-              {/* ✅ CHECKBOXES FOR TERMS & MARKETING */}
-              <div className="space-y-3">
-                <label className="flex items-start gap-2 cursor-pointer">
-                  <input type="checkbox" checked={form.marketing} onChange={(e) => setForm({...form, marketing: e.target.checked})} />
-                  <span>I agree to receive newsletters and marketing communications.</span>
-                </label>
-                <label className="flex items-start gap-2 cursor-pointer">
-                  <input type="checkbox" required checked={form.terms} onChange={(e) => setForm({ ...form, terms: e.target.checked })} />
-                  <span>I accept the <span className="underline">Terms</span> & <span className="underline">Privacy Policy</span> <span className="text-red-500">*</span></span>
-                </label>
-              </div>
+              {/* Marketing Consent */}
+              {/* <label className="flex items-start gap-3 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  checked={form.marketing} 
+                  onChange={(e) => setForm({ ...form, marketing: e.target.checked })} 
+                  className="w-4 h-4 mt-0.5 accent-purple-600"
+                />
+                <span className="text-sm text-gray-600">I wish to receive marketing communications</span>
+              </label> */}
 
-              {/* ✅ BUTTON WITH DISABLED CONDITION */}
+              {/* Terms Checkbox */}
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  required 
+                  checked={form.terms} 
+                  onChange={(e) => setForm({ ...form, terms: e.target.checked })} 
+                  className="w-4 h-4 mt-0.5 accent-purple-600"
+                />
+                <span className="text-sm text-gray-600">
+                  I accept the <span className="underline text-purple-600 cursor-pointer">Terms</span> & <span className="underline text-purple-600 cursor-pointer">Privacy Policy</span> <span className="text-red-500">*</span>
+                </span>
+              </label>
+
+              {/* Submit Button */}
               <button
                 onClick={handleSubmit}
-                disabled={loading || !form.terms || !form.marketing}
-                className="w-full mt-4 bg-[#5C039B] hover:bg-purple-800 disabled:bg-gray-400 text-white py-3 sm:py-4 rounded-xl font-semibold text-base sm:text-lg transition"
+                disabled={loading || !form.terms}
+                className="w-full mt-4 bg-[#5C039B] hover:bg-purple-800 disabled:bg-gray-400 text-white py-3 sm:py-4 rounded-xl font-semibold text-base sm:text-lg transition-all duration-200"
               >
-                {loading ? "Submitting..." : "Submit"}
+                {loading ? "Submitting..." : "Submit Application"}
               </button>
             </div>
           </div>
         </div>
       </div>
-
-      <style jsx global>{`
-        .custom-select-modal .ant-select-selector {
-          border-radius: 0.75rem !important; 
-          border-color: #d1d5db !important; 
-          height: 46px !important;
-          padding-top: 6px !important;
-        }
-        .custom-select-modal .ant-select-selector:hover {
-          border-color: #a855f7 !important; 
-        }
-        .custom-select-modal.ant-select-focused .ant-select-selector {
-          border-color: #a855f7 !important;
-          box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2) !important;
-        }
-      `}</style>
     </div>
   );
 }

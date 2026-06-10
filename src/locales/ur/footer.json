@@ -11,12 +11,12 @@
     "email": "ای میل"
   },
   "offerings": [
-    { "label": "لینڈ اسکیپنگ", "path": "/landscaping" },
-    { "label": "انٹیریئرز", "path": "/services/interior" },
+    { "label": "لینڈ اسکیپنگ", "path": "/service/landscaping" },
+    { "label": "انٹیریئرز", "path": "/service/interior" },
     { "label": "کرایہ", "path": "/Property" },
     { "label": "خریدیں", "path": "/Property" },
     { "label": "بیچیں", "path": "/Property" },
-    { "label": "ہوم لون", "path": "/mortgage/services" }
+    { "label": "ہوم لون", "path": "/service/mortgage" }
     
   ],
   "resources": [

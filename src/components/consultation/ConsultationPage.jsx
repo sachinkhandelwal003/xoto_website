@@ -1,11 +1,19 @@
-import React from 'react';
-import { Box, Typography, Card, CardContent, TextField, Button } from '@mui/material';
+import React, { useState } from 'react';
+import { Box, Typography, Card, TextField, Button } from '@mui/material';
 import { motion } from 'framer-motion';
+import { notification } from 'antd';
 import mockupImage from '../../assets/img/homepage.webp'; // Ensure this file exists
 import { FaLightbulb, FaClock, FaUserCheck } from 'react-icons/fa';
+
 const backgroundImageUrl = '/images/zigzag-light-bg.png';
 
 const ConsultationPage = () => {
+  const [api, contextHolder] = notification.useNotification();
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+  });
   // Animation variants for the cards
   const zoomAnimation = {
     animate: {
@@ -16,6 +24,47 @@ const ConsultationPage = () => {
         ease: 'easeInOut',
       },
     },
+  };
+
+  const openNotification = (type, title, description) => {
+    api[type]({
+      message: title,
+      description,
+      placement: 'topRight',
+      duration: 4,
+    });
+  };
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    if (!formData.fullName.trim()) {
+      openNotification('error', 'Validation Error', 'Full name is required.');
+      return;
+    }
+
+    if (!formData.email.trim()) {
+      openNotification('error', 'Validation Error', 'Email address is required.');
+      return;
+    }
+
+    if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      openNotification('error', 'Validation Error', 'Please enter a valid email address.');
+      return;
+    }
+
+    if (!formData.phone.trim()) {
+      openNotification('error', 'Validation Error', 'Phone number is required.');
+      return;
+    }
+
+    openNotification('success', 'Success', 'Your consultation request has been received. We will contact you shortly.');
+    setFormData({ fullName: '', email: '', phone: '' });
   };
 
   // Card data with icons
@@ -39,6 +88,7 @@ const ConsultationPage = () => {
 
   return (
     <Box sx={{ width: '100%', overflow: 'hidden' }}>
+      {contextHolder}
       {/* Top Section: Background Image and Form */}
       <Box
         sx={{
@@ -94,10 +144,13 @@ const ConsultationPage = () => {
             >
               Book a Free Consultation
             </Typography>
-            <Box component="form" noValidate autoComplete="off">
+            <Box component="form" noValidate autoComplete="off" onSubmit={handleSubmit}>
               <TextField
                 fullWidth
                 label="Full Name"
+                name="fullName"
+                value={formData.fullName}
+                onChange={handleChange}
                 margin="normal"
                 required
                 variant="outlined"
@@ -115,6 +168,10 @@ const ConsultationPage = () => {
               <TextField
                 fullWidth
                 label="Email Address"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
                 margin="normal"
                 required
                 variant="outlined"
@@ -132,6 +189,9 @@ const ConsultationPage = () => {
               <TextField
                 fullWidth
                 label="Phone Number"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
                 margin="normal"
                 required
                 variant="outlined"

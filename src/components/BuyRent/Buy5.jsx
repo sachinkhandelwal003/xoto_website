@@ -120,11 +120,7 @@ const OurProperty = () => {
     const fetchProperties = async () => {
       try {
         setFetchLoading(true);
-const res = await apiService.get("/property/get-all-properties", {
-  page: 1,
-  limit: 10,
-  isFeatured: false
-});
+const res = await apiService.get("/properties/public?limit=3",);
 
 if (res && Array.isArray(res.data)) {
 
@@ -132,22 +128,26 @@ if (res && Array.isArray(res.data)) {
 
   const limited = list.slice(0, 3); // ✅ only 3
 
-  const transformedProperties = limited.map((item) => ({
-    id: item._id,
-    image: item.photos?.[0] || item.mainLogo || "https://via.placeholder.com/400x300?text=No+Image",
-    title: item.propertyName || "Unnamed Property",
-    price: item.price
-      ? `${item.currency || "AED"} ${Number(item.price).toLocaleString()}`
-      : "Price on Request",
-    location: item.area && item.city ? `${item.area}, ${item.city}` : "Dubai, UAE",
-    bedrooms: item.bedrooms || 0,
-    bathrooms: item.bathrooms || 0,
-    area: item.builtUpArea
-      ? `${item.builtUpArea} ${item.builtUpAreaUnit || "sqft"}`
-      : "N/A",
-    tag: item.propertyType === "rent" ? "Rent" : "Sell",
-    liked: false,
-  }));
+const transformedProperties = limited.map((item) => ({
+  id: item._id,
+  image: item.photos?.[0] || item.mainLogo,
+  title: item.propertyName,
+  price: item.price
+    ? `${item.currency || "AED"} ${Number(item.price).toLocaleString()}`
+    : "Price on Request",
+  location: item.area && item.city ? `${item.area}, ${item.city}` : "Dubai, UAE",
+
+  bedrooms: item.bedrooms || 0,
+  bedroomType: item.bedroomType || "", // ✅ add this
+
+  bathrooms: item.bathrooms || 0,
+  area: item.builtUpArea
+    ? `${item.builtUpArea} ${item.builtUpAreaUnit || "sqft"}`
+    : "N/A",
+
+  tag: item.propertyType === "rent" ? "Rent" : "Sell",
+  liked: false,
+}));
 
   setProperties(transformedProperties);
 }
@@ -365,15 +365,15 @@ function PropertyCard({ property, onShowDetails }) {
               <img src={bedicon} alt="bed" className="w-5 h-5" />
               <span className="text-[16px] font-medium text-[#0F172A] font-dm">{property.bedrooms}</span>
             </div>
-            <span className="mt-1 block text-[14px] md:text-[16px] leading-[18px] text-[rgba(0,0,0,0.6)] font-dm">Bedrooms</span>
+            <span className="mt-1 block text-[14px] md:text-[16px] leading-[18px] text-[rgba(0,0,0,0.6)] font-dm">{property.bedroomType}</span>
           </div>
-          <div className="w-1/3 text-center">
+          {/* <div className="w-1/3 text-center">
             <div className="flex items-center justify-center gap-2">
               <img src={tubicon} alt="bath" className="w-5 h-5" />
               <span className="text-[16px] font-medium text-[#0F172A] font-dm">{property.bathrooms}</span>
             </div>
             <span className="mt-1 block text-[14px] md:text-[16px] leading-[18px] text-[rgba(0,0,0,0.6)] font-dm">Bathroom</span>
-          </div>
+          </div> */}
           <div className="w-1/3 text-center">
             <div className="flex items-center justify-center gap-2">
               <img src={layouticon} alt="area" className="w-5 h-5" />
@@ -386,7 +386,7 @@ function PropertyCard({ property, onShowDetails }) {
           onClick={onShowDetails}
           className="w-full mt-8 h-[48px] rounded-lg bg-[#5C039B] text-white text-[16px] font-medium transition-transform hover:scale-[1.02] active:scale-95"
         >
-          Show Details
+          Send Enquiry
         </button>
       </div>
     </div>

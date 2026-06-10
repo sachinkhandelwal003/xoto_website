@@ -6,7 +6,7 @@ const CmsContext = createContext(null);
 export const CmsProvider = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [mobileSidebarCollapsed, setMobileSidebarCollapsed] = useState(false);
+  const [mobileSidebarCollapsed, setMobileSidebarCollapsed] = useState(true);
 
   const toggleSidebar = () => {
     setSidebarOpen(prev => !prev);

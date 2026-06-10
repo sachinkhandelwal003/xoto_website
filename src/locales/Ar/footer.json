@@ -11,12 +11,12 @@
     "email": "البريد الإلكتروني"
   },
   "offerings": [
-    { "label": "تنسيق الحدائق", "path": "/landscaping" },
-    { "label": "التصميم الداخلي", "path": "/services/interior" },
+    { "label": "تنسيق الحدائق", "path": "/service/landscaping" },
+    { "label": "التصميم الداخلي", "path": "/service/interior" },
     { "label": "الإيجار", "path": "/Property" },
     { "label": "شراء", "path": "/Property" },
     { "label": "بيع", "path": "/Property" },
-    { "label": "الرهون العقارية", "path": "/mortgage/services" }
+    { "label": "الرهون العقارية", "path": "/service/mortgage" }
     
   ],
   "resources": [

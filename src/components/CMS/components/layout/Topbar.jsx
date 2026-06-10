@@ -38,97 +38,158 @@ const Topbar = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((s) => s.auth);
   
-  // ✅ State for Profile Data
-  const [userProfile, setUserProfile] = useState(null);
+  // ✅ State for Notifications only (no more failing profile API call)
   const [notifOpen, setNotifOpen] = useState(false);
+  const [profileData, setProfileData] = useState(null);
+  const [profileLoading, setProfileLoading] = useState(false);
 
   const colors = getRoleColors(user?.role?.code);
 
-  // ✅ Fetch Profile Data from API
-  useEffect(() => {
-    const fetchProfileData = async () => {
-      try {
-        const res = await apiService.get('/profile/get-profile-data');
-        if (res.data) {
-          setUserProfile(res.data);
-        }
-      } catch (err) {
-        console.error("Failed to fetch profile data in Topbar", err);
+  /* ---------------- ROLE LOGIC ---------------- */
+  const roleCode = user?.role?.code?.toString();
+  const roleSlug = {
+    "0": "superadmin",
+    "1": "admin",
+    "2": "customer",
+    "5": "vendor-b2c",
+    "6": "vendor-b2b",
+    "7": "freelancer",
+    "11": "accountant",
+    "12": "supervisor",
+    "15": "agency",
+    "16": "agent",
+    "21":"vaultpartner",
+    "25":"gridreferralpartner",
+  }[roleCode] ?? "dashboard";
+
+  // Fetch profile data
+  const fetchProfile = async () => {
+    if (!user?.id) return;
+
+    // Only agency and referral partner have role-specific profile endpoints;
+    // every other role uses the generic /profile/get-profile-data.
+    const endpoint =
+      roleCode === '15' ? "/agency/profile" :
+      roleCode === '25' ? "/referral/profile" :
+      "/profile/get-profile-data";
+
+    setProfileLoading(true);
+    try {
+      const res = await apiService.get(endpoint);
+      if (res?.data) {
+        setProfileData(res.data);
       }
-    };
+    } catch (err) {
+      console.error("Topbar: fetchProfile error", err);
+    } finally {
+      setProfileLoading(false);
+    }
+  };
 
-    fetchProfileData();
-  }, []);
+  useEffect(() => {
+    fetchProfile();
+  }, [user?.id, roleCode]);
 
-  // ✅ Helper to safely get Name
+useEffect(() => {
+  const handleProfilePhotoUpdate = (e) => {
+    // GridAdvisorProfile se event aata hai — profileData update karo
+    setProfileData((prev) => {
+      const current = prev?.data || prev || {};
+      const updated = { ...current, profilePhotoUrl: e.detail?.photoUrl };
+      // Agar prev mein .data nesting thi toh wahi maintain karo
+      return prev?.data ? { ...prev, data: updated } : updated;
+    });
+  };
+ 
+  window.addEventListener("gridAdvisorPhotoUpdated", handleProfilePhotoUpdate);
+  return () => window.removeEventListener("gridAdvisorPhotoUpdated", handleProfilePhotoUpdate);
+}, []);
+
+useEffect(() => {
+  const handleDeveloperLogoUpdate = (e) => {
+    setProfileData((prev) => {
+      const current = prev?.data || prev || {};
+      const updated = { ...current, logo: e.detail?.photoUrl };
+      return prev?.data ? { ...prev, data: updated } : updated;
+    });
+  };
+  window.addEventListener("developerLogoUpdated", handleDeveloperLogoUpdate);
+  return () => window.removeEventListener("developerLogoUpdated", handleDeveloperLogoUpdate);
+}, []);
+
+  // ✅ Helper to safely get Name - prioritize referral partner's firstName/lastName
  const getDisplayName = () => {
   try {
-    const apiData = userProfile?.data || userProfile;
+    console.log("Topbar: user", user);
+    console.log("Topbar: roleCode", roleCode);
+    console.log("Topbar: profileData", profileData);
     const reduxData = user?.data || user;
+    const data = profileData?.data || profileData || reduxData;
+    console.log("Topbar: data", data);
 
-    // API data se try karo
-    if (apiData?.first_name && typeof apiData.first_name === 'string') {
-      const full = `${apiData.first_name} ${apiData.last_name || ''}`.trim();
+    // 0. Check for agency (companyName)
+    if (roleCode === '15' && data?.companyName) {
+      return data.companyName.trim();
+    }
+
+    // 1. Check for referral partner's JWT format (firstName, lastName - no underscore)
+    if (data?.firstName && typeof data.firstName === 'string') {
+      const full = `${data.firstName} ${data.lastName || ''}`.trim();
       if (full) return full;
     }
 
-    if (apiData?.name) {
-      if (typeof apiData.name === 'object') {
-        const full = `${apiData.name.first_name || ''} ${apiData.name.last_name || ''}`.trim();
-        if (full) return full;
-      }
-      if (typeof apiData.name === 'string' && apiData.name.trim()) {
-        return apiData.name.trim();
-      }
-    }
-
-    // Redux data se try karo
-    if (reduxData?.first_name && typeof reduxData.first_name === 'string') {
-      const full = `${reduxData.first_name} ${reduxData.last_name || ''}`.trim();
+    // 2. Check for underscore format (first_name, last_name)
+    if (data?.first_name && typeof data.first_name === 'string') {
+      const full = `${data.first_name} ${data.last_name || ''}`.trim();
       if (full) return full;
     }
 
-    if (reduxData?.name) {
-      if (typeof reduxData.name === 'object') {
-        const full = `${reduxData.name.first_name || ''} ${reduxData.name.last_name || ''}`.trim();
+    // 3. Check for name (string or object)
+    if (data?.name) {
+      if (typeof data.name === 'object') {
+        const full = `${data.name.first_name || data.name.firstName || ''} ${data.name.last_name || data.name.lastName || ''}`.trim();
         if (full) return full;
       }
-      if (typeof reduxData.name === 'string' && reduxData.name.trim()) {
-        return reduxData.name.trim();
+      if (typeof data.name === 'string' && data.name.trim()) {
+        return data.name.trim();
       }
     }
 
-    // Username ya email se fallback
-    if (reduxData?.username && typeof reduxData.username === 'string') {
-      return reduxData.username.trim();
+    // 4. Username or email fallback
+    if (data?.username && typeof data.username === 'string') {
+      return data.username.trim();
     }
 
-    if (reduxData?.email && typeof reduxData.email === 'string') {
-      return reduxData.email.split('@')[0]; // email ka pehla part use karo
+    if (data?.email && typeof data.email === 'string') {
+      return data.email.split('@')[0];
     }
 
   } catch (e) {
-    // kuch bhi ho, crash mat karo
+    console.log("Topbar: getDisplayName error", e);
   }
 
   return "User"; // Last fallback
 };
   // ✅ Helper for Email
   const getDisplayEmail = () => {
-    const apiData = userProfile?.data || userProfile;
     const reduxData = user?.data || user;
-    return apiData?.email || reduxData?.email || "";
+    const data = profileData?.data || profileData || reduxData;
+    return data?.email || "";
   };
 
   // 🚀 NAYA HELPER: Photo ko safely nikalne ke liye
   const getProfilePhoto = () => {
-    const apiData = userProfile?.data || userProfile;
     const reduxData = user?.data || user;
+    const data = profileData?.data || profileData || reduxData;
     
-    // Check karega dono formats: profile_photo (Agent) aur profilePic (Customer)
-    return apiData?.profile_photo || apiData?.profilePic || reduxData?.profile_photo || reduxData?.profilePic || null;
-  };
-
+     return (
+    data?.profilePhotoUrl ||
+    data?.logo            ||
+    data?.profile_photo   ||
+    data?.profilePic      ||
+    null
+  );
+};
   /* ---------------- NOTIFICATIONS ---------------- */
   const [notifications, setNotifications] = useState([]);
   const lastCountRef = useRef(0); 
@@ -158,24 +219,8 @@ const Topbar = () => {
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
-  /* ---------------- ROLE LOGIC ---------------- */
-  const roleCode = user?.role?.code?.toString();
-  const roleSlug = {
-    "0": "superadmin",
-    "1": "admin",
-    "2": "customer",
-    "5": "vendor-b2c",
-    "6": "vendor-b2b",
-    "7": "freelancer",
-    "11": "accountant",
-    "12": "supervisor",
-    "16": "agent",
-    "21":"vaultpartner",
-    "25":"gridreferralpartner",
-  }[roleCode] ?? "dashboard";
-
-  const handleLogout = async () => {
-    await dispatch(logoutUser());
+  const handleLogout = () => {
+    dispatch(logoutUser());
     navigate("/");
   };
 
@@ -200,7 +245,7 @@ const Topbar = () => {
       key: "1",
       label: "My Profile",
       icon: <UserOutlined />,
-      onClick: () => navigate(`/dashboard/${roleSlug}/myprofile`)
+      onClick: () => navigate(roleCode === '15' ? `/dashboard/${roleSlug}/agency-profile` : `/dashboard/${roleSlug}/myprofile`)
     },
   
     { type: "divider" },
@@ -322,7 +367,7 @@ const Topbar = () => {
           <Dropdown
             open={notifOpen}
             onOpenChange={setNotifOpen}
-            dropdownRender={() => notificationDropdown}
+            popupRender={() => notificationDropdown}
             trigger={["click"]}
             placement="bottomRight"
           >
@@ -342,16 +387,18 @@ const Topbar = () => {
             <div className="flex items-center gap-2 cursor-pointer">
               
               {/* ✅ PHOTO FIX: Naya getProfilePhoto() helper laga diya */}
-              <Avatar
-                title={getDisplayName()}
-                src={getProfilePhoto()} 
-                style={{ 
-                  backgroundColor: colors?.primary || "#722ed1",
-                  verticalAlign: 'middle' 
-                }}
-              >
-                {!getProfilePhoto() && getDisplayName()?.charAt(0)?.toUpperCase()}
-              </Avatar>
+             <Avatar
+  title={getDisplayName()}
+  src={getProfilePhoto() || undefined}
+  style={{
+    backgroundColor: colors?.primary || "#722ed1",
+    verticalAlign: "middle"
+  }}
+>
+  {(
+    getDisplayName()?.trim()?.charAt(0) || "U"
+  ).toUpperCase()}
+</Avatar>
 
               <div className="hidden md:flex flex-col leading-tight">
                 <Text strong className="text-sm">

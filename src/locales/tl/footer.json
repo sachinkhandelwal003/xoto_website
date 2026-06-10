@@ -11,12 +11,12 @@
     "email": "Email"
   },
   "offerings": [
-    { "label": "Landscaping", "path": "/landscaping" },
-    { "label": "Disenyong Panloob", "path": "/services/interior" },
+    { "label": "Landscaping", "path": "/service/landscaping" },
+    { "label": "Disenyong Panloob", "path": "/service/interior" },
     { "label": "Umuupa", "path": "/Property" },
     { "label": "Bumibili", "path": "/Property" },
     { "label": "Nagbebenta", "path": "/Property" },
-    { "label": "Pautang sa Bahay", "path": "/mortgage/services" }
+    { "label": "Pautang sa Bahay", "path": "/service/mortgage" }
   ],
   "resources": [
     { "label": "Mga Estratehikong Alyansa", "path": "/login" },

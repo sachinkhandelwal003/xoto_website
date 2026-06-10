@@ -11,12 +11,12 @@
     "email": "ईमेल"
   },
   "offerings": [
-    { "label": "लैंडस्केपिंग", "path": "/landscaping" },
-    { "label": "इंटीरियर्स", "path": "/services/interior" },
+    { "label": "लैंडस्केपिंग", "path": "/service/landscaping" },
+    { "label": "इंटीरियर्स", "path": "/service/interior" },
     { "label": "किराया", "path": "/Property" },
     { "label": "खरीदें", "path": "/Property" },
     { "label": "बेचें", "path": "/Property" },
-    { "label": "होम लोन", "path": "/mortgage/services" }
+    { "label": "होम लोन", "path": "/service/mortgage" }
     
   ],
   "resources": [

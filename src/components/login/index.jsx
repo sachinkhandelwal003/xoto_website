@@ -169,26 +169,6 @@ const selectedPartnerTypeRef = useRef(null);
       gradient: "linear-gradient(135deg, #03A4F4, #0077b6)",
       type: "direct",
     },
-    {
-      id: "agent",
-      label: "Agents",
-      desc: "For Agents",
-      icon: <IdcardOutlined style={{ fontSize: "28px" }} />,
-      color: "#10B981",
-      gradient: "linear-gradient(135deg, #10B981, #059669)",
-      type: "direct",
-    },
-    // ── DEVELOPER COMMENTED OUT ──────────────────────────────────────────
-    {
-      id: "developer",
-      label: "Developers",
-      desc: "For Developers",
-      icon: <CodeOutlined style={{ fontSize: "28px" }} />,
-      color: "#F97316",
-      gradient: "linear-gradient(135deg, #10B981, #059669)",
-      type: "direct",
-    },
-    // ─────────────────────────────────────────────────────────────────────
   ];
 
   const partnerTypes = [
@@ -233,6 +213,26 @@ const selectedPartnerTypeRef = useRef(null);
     //   color: "#5C039B",
     //   gradient: "linear-gradient(135deg, #5C039B, #03A4F4)",
     // },
+    {
+  id: "gridadvisor",
+  value: "gridadvisor",
+  label: "Grid Advisor",
+  desc: "Xoto Internal Advisor",
+  icon: <UserOutlined style={{ fontSize: "28px" }} />,
+  color: "#0EA5E9",
+  gradient: "linear-gradient(135deg, #0EA5E9, #0284C7)",
+  type: "direct",
+},
+{
+  id: "gridreferralpartner",
+  value: "gridreferralpartner",
+  label: "Referral Partner",
+  desc: "Grid Referral Network",
+  icon: <PhoneOutlined style={{ fontSize: "28px" }} />,
+  color: "#8B5CF6",
+  gradient: "linear-gradient(135deg, #8B5CF6, #7C3AED)",
+  type: "direct",
+},
   ];
 
   const getSelectedPartner = () =>
@@ -257,46 +257,46 @@ useEffect(() => {
       const developerId = user?._id || user?.id;
       localStorage.setItem("developerId", developerId);
       toast.success("Welcome Developer! Accessing your dashboard...");
-      setTimeout(() => navigate("/dashboard/developer", { replace: true }), 1500);
+      setTimeout(() => { window.location.href = "/dashboard/developer"; }, 1500);
       return;
     }
 
     if (partnerType === "agent") {
       toast.success("Welcome Agent! Accessing your dashboard...");
-      setTimeout(() => navigate("/dashboard/agent", { replace: true }), 1500);
+      setTimeout(() => { window.location.href = "/dashboard/agent"; }, 1500);
       return;
     }
 
     if (partnerType === "agency") {
       toast.success("Welcome Agency! Accessing your dashboard...");
-      setTimeout(() => navigate("/dashboard/agency", { replace: true }), 1500);
+      setTimeout(() => { window.location.href = "/dashboard/agency"; }, 1500);
       return;
     }
 
     if (partnerType === "vaultpartner") {
       toast.success("Welcome to Xoto Vault!");
-      setTimeout(() => navigate("/dashboard/vaultpartner", { replace: true }), 1500);
+      setTimeout(() => { window.location.href = "/dashboard/vaultpartner"; }, 1500);
       return;
     }
 
     if (partnerType === "vaultagent") {
       toast.success("Welcome to Xoto Vault!");
-      setTimeout(() => navigate("/dashboard/vaultagent", { replace: true }), 1500);
+      setTimeout(() => { window.location.href = "/dashboard/vaultagent"; }, 1500);
       return;
     }
 
     // ✅ Also check user.type from JWT as extra fallback
     const userType = user?.type?.toLowerCase();
     if (userType === 'agent') {
-      setTimeout(() => navigate("/dashboard/agent", { replace: true }), 1500);
+      setTimeout(() => { window.location.href = "/dashboard/agent"; }, 1500);
       return;
     }
     if (userType === 'agency') {
-      setTimeout(() => navigate("/dashboard/agency", { replace: true }), 1500);
+      setTimeout(() => { window.location.href = "/dashboard/agency"; }, 1500);
       return;
     }
     if (userType === 'developer') {
-      setTimeout(() => navigate("/dashboard/developer", { replace: true }), 1500);
+      setTimeout(() => { window.location.href = "/dashboard/developer"; }, 1500);
       return;
     }
 
@@ -315,35 +315,31 @@ useEffect(() => {
       "21": "/dashboard/vaultpartner",
     };
 
-    const path = rolePathMap[roleCode] || "/dashboard";
+    const path = rolePathMap[roleCode];
     if (rolePathMap[roleCode]) {
       toast.success("Welcome back! Redirecting...");
-      setTimeout(() => navigate(path, { replace: true }), 1500);
-    } else {
-      navigate("/dashboard", { replace: true });
+      setTimeout(() => { window.location.href = path; }, 1500);
+      return;
+    } 
+    if (partnerType === "gridadvisor") {
+      toast.success("Welcome Grid Advisor!");
+      setTimeout(() => { window.location.href = "/dashboard/GridAdvisor"; }, 1500);
+      return;
     }
+
+    if (partnerType === "gridreferralpartner") {
+      toast.success("Welcome Referral Partner!");
+      setTimeout(() => { window.location.href = "/dashboard/gridreferralpartner"; }, 1500);
+      return;
+    }
+
+    window.location.href = "/dashboard";
   }
 }, [isAuthenticated, user, token, navigate, selectedPartnerType]);
   
   // --- Handlers ---
   
   const handleMainSelect = (category) => {
-    if (category.id === "agent") {
-      // Vault Agent commented out hai, isliye seedha login pe le jao
-      setSelectedPartnerType("agent");
-      setView("login");
-      setParentMenu("main");
-      setGeneralError("");
-      form.resetFields();
-      return;
-    }
-    if (category.id === "vendor-b2c") {
-      setView("alliance-select"); 
-      setParentMenu("alliance-select");
-      setGeneralError("");
-      return;
-    }
-    
     setSelectedPartnerType(category.id);
     setView("login");
     setParentMenu("main");
@@ -372,7 +368,7 @@ useEffect(() => {
             setView("agent-select");
             setSelectedPartnerType(null);
         } else if (selectedPartnerType === "vendor-b2c") {
-            setView("alliance-select");
+            setView("main");
             setSelectedPartnerType(null);
         } else {
             setView("main"); 
@@ -392,54 +388,51 @@ const onFinish = async (values) => {
   setGeneralError("");
 
   try {
-    let endpoint = "";
 
- if (selectedPartnerType === "agent") {
-  const countryCode = values.agent_country_code || "971";
-  const rawPhone    = values.agent_phone;
-  const fullPhone   = `+${countryCode}${rawPhone}`;
+    // ── Agent ──────────────────────────────────────────────────
+    if (selectedPartnerType === "agent") {
+      const countryCode = values.agent_country_code || "971";
+      const fullPhone = `+${countryCode}${values.agent_phone}`;
+      await login("/agent/login-agent", { phone: fullPhone, password: values.password });
 
-  await login("/agent/login-agent", {
-    phone:    fullPhone,        // ✅ "+917850006052"
-    password: values.password,
-  });
-} else {
-  let endpoint = "";
-  if (selectedPartnerType === "freelancer")    endpoint = "/freelancer/login";
-  else if (selectedPartnerType === "vendor-b2c")  endpoint = "/vendor/login";
-  else if (selectedPartnerType === "developer")   endpoint = "/developer/login-developer";
-  else if (selectedPartnerType === "agency")      endpoint = "/agency/auth/login";
-  else if (selectedPartnerType === "vaultpartner")endpoint = "/vault/partner/login";
-  else if (selectedPartnerType === "vaultagent")  endpoint = "/vault/agent/login";
+    // ── Referral Partner ───────────────────────────────────────
+    } else if (selectedPartnerType === "gridreferralpartner") {
+      const countryCode = values.agent_country_code || "971";
+      const fullPhone = `+${countryCode}${values.agent_phone}`;
+      await login("/referral/login-partner", { phone: fullPhone, password: values.password });
 
-  await login(endpoint, {
-    email:    values.email,
-    password: values.password,
-  });
-}
+    // ── Grid Advisor ───────────────────────────────────────────
+    } else if (selectedPartnerType === "gridadvisor") {
+      await login("/gridadvisor/login", { email: values.email, password: values.password });
+
+    // ── Baaki sab email wale ───────────────────────────────────
+    } else {
+      let endpoint = "";
+      if      (selectedPartnerType === "freelancer")   endpoint = "/freelancer/login";
+      else if (selectedPartnerType === "vendor-b2c")   endpoint = "/vendor/login";
+      else if (selectedPartnerType === "developer")    endpoint = "/developer/login-developer";
+      else if (selectedPartnerType === "agency")       endpoint = "/agency/auth/login";
+      else if (selectedPartnerType === "vaultpartner") endpoint = "/vault/partner/login";
+      else if (selectedPartnerType === "vaultagent")   endpoint = "/vault/agent/login";
+
+      await login(endpoint, { email: values.email, password: values.password });
+    }
+
   } catch (err) {
     console.log("🔥 Backend Error Object:", err);
 
     let errorMessage = "Invalid credentials";
-
-    if (err?.response?.data?.message) {
-      errorMessage = err.response.data.message;
-    } else if (err?.data?.message) {
-      errorMessage = err.data.message;
-    } else if (typeof err === 'object' && err?.message && !err.message.includes("status code")) {
-      errorMessage = err.message;
-    } else if (typeof err === 'string') {
-      errorMessage = err;
-    }
+    if (err?.response?.data?.message)      errorMessage = err.response.data.message;
+    else if (err?.data?.message)           errorMessage = err.data.message;
+    else if (typeof err === "object" && err?.message && !err.message.includes("status code"))
+                                           errorMessage = err.message;
+    else if (typeof err === "string")      errorMessage = err;
 
     const errorStr = errorMessage.toLowerCase();
-    const isPendingOrUnapproved = errorStr.includes("not approved") || errorStr.includes("pending") || errorStr.includes("approv");
+    const isPending = errorStr.includes("not approved") || errorStr.includes("pending") || errorStr.includes("approv");
 
-    if (isPendingOrUnapproved) {
-      toast.warning(errorMessage, { position: "top-center", autoClose: 5000 });
-    } else {
-      toast.error(errorMessage, { position: "top-center" });
-    }
+    if (isPending) toast.warning(errorMessage, { position: "top-center", autoClose: 5000 });
+    else           toast.error(errorMessage, { position: "top-center" });
 
     setGeneralError(errorMessage);
   } finally {
@@ -449,12 +442,14 @@ const onFinish = async (values) => {
 
   const handleRegister = () => {
     if (selectedPartnerType === "freelancer") navigate("/freelancer/registration");
-    else if (selectedPartnerType === "vendor-b2c") navigate("/ecommerce/seller");
+    else if (selectedPartnerType === "vendor-b2c") navigate("/seller/registration");
     else if (selectedPartnerType === "developer") navigate("/developer/registration");
     else if (selectedPartnerType === "agent") navigate("/agent/registration"); 
     else if (selectedPartnerType === "agency") navigate("/agency/registration"); 
     else if (selectedPartnerType === "vaultpartner") navigate("/vault/vault-register");
     else if (selectedPartnerType === "vaultagent") navigate("/vault/vault-register");
+    else if (selectedPartnerType === "gridreferralpartner") navigate("/referral-partner/register");
+
   };
 
   // --- RENDER CONTENT ---
@@ -757,10 +752,10 @@ onClick={() => handleSubSelect("vaultpartner")}          >
                 </div>
                 <div>
                   <div style={{ fontSize: 18, fontWeight: "bold", color: "#333" }}>
-                    Agency
+                    Partner
                   </div>
                   <div style={{ fontSize: 13, color: "#888" }}>
-                    Property Agencies
+                    Property Partners
                   </div>
                 </div>
           </SelectionCard>
@@ -793,6 +788,49 @@ onClick={() => handleSubSelect("vaultpartner")}          >
                 </div>
           </SelectionCard>
         </Col>
+        {/* Grid Advisor Card */}
+<Col xs={24} sm={12} md={8}>
+  <SelectionCard
+    $active={selectedPartnerType === "gridadvisor"}
+    $color="#0EA5E9"
+    onClick={() => handleSubSelect("gridadvisor")}
+  >
+    <div style={{
+      width: 60, height: 60, borderRadius: "50%",
+      background: "linear-gradient(135deg, #0EA5E9, #0284C7)",
+      color: "#fff", display: "flex", alignItems: "center",
+      justifyContent: "center", boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+    }}>
+      <UserOutlined style={{ fontSize: "24px" }} />
+    </div>
+    <div>
+      <div style={{ fontSize: 18, fontWeight: "bold", color: "#333" }}>Grid Advisor</div>
+      <div style={{ fontSize: 13, color: "#888" }}>Xoto Internal Advisor</div>
+    </div>
+  </SelectionCard>
+</Col>
+
+{/* Referral Partner Card */}
+<Col xs={24} sm={12} md={8}>
+  <SelectionCard
+    $active={selectedPartnerType === "gridreferralpartner"}
+    $color="#8B5CF6"
+    onClick={() => handleSubSelect("gridreferralpartner")}
+  >
+    <div style={{
+      width: 60, height: 60, borderRadius: "50%",
+      background: "linear-gradient(135deg, #8B5CF6, #7C3AED)",
+      color: "#fff", display: "flex", alignItems: "center",
+      justifyContent: "center", boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+    }}>
+      <PhoneOutlined style={{ fontSize: "24px" }} />
+    </div>
+    <div>
+      <div style={{ fontSize: 18, fontWeight: "bold", color: "#333" }}>Referral Partner</div>
+      <div style={{ fontSize: 13, color: "#888" }}>Grid Referral Network</div>
+    </div>
+  </SelectionCard>
+</Col>
       </Row>
     </motion.div>
   );
@@ -800,6 +838,7 @@ onClick={() => handleSubSelect("vaultpartner")}          >
   // 3. Login Form (ORIGINAL, UNCHANGED)
   const renderLoginForm = () => {
     const activePartner = getSelectedPartner();
+    const shouldShowRegister = !["agency", "developer", "gridadvisor"].includes(selectedPartnerType);
 
    return (
     <motion.div
@@ -856,7 +895,7 @@ onClick={() => handleSubSelect("vaultpartner")}          >
 
       <Form form={form} layout="vertical" onFinish={onFinish} size="large">
         {/* Agent → phone input, Others → email input */}
-        {selectedPartnerType === "agent" ? (
+        {selectedPartnerType === "agent" || selectedPartnerType === "gridreferralpartner" ? (
           <Form.Item label="Phone Number" style={{ marginBottom: 0 }} required>
             <Space.Compact style={{ width: '100%' }}>
               <Form.Item
@@ -969,20 +1008,22 @@ onClick={() => handleSubSelect("vaultpartner")}          >
             {loading ? "Signing In..." : "Login Now"}
           </Button>
 
-          <Button
-            onClick={handleRegister}
-            block
-            style={{
-              height: 52,
-              borderRadius: 12,
-              fontWeight: "bold",
-              fontSize: "15px",
-              borderColor: activePartner?.color,
-              color: activePartner?.color,
-            }}
-          >
-            Register
-          </Button>
+          {shouldShowRegister && (
+            <Button
+              onClick={handleRegister}
+              block
+              style={{
+                height: 52,
+                borderRadius: 12,
+                fontWeight: "bold",
+                fontSize: "15px",
+                borderColor: activePartner?.color,
+                color: activePartner?.color,
+              }}
+            >
+              Register
+            </Button>
+          )}
         </div>
       </Form>
     </motion.div>
@@ -1005,7 +1046,12 @@ onClick={() => handleSubSelect("vaultpartner")}          >
               ? "#5C039B"
               : selectedPartnerType === "vaultagent"  
               ? "#5C039B"
-              : "#5C039B",
+              : selectedPartnerType === "gridadvisor"
+? "#0EA5E9"
+: selectedPartnerType === "gridreferralpartner"
+? "#8B5CF6"
+: "#5C039B",
+      
           borderRadius: 8,
           fontFamily: "Poppins, sans-serif",
         },

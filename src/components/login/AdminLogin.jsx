@@ -155,7 +155,7 @@ const AdminLogin = () => {
       );
 
       setTimeout(() => {
-        navigate(getDashboardPath(roleCode), { replace: true });
+        window.location.href = getDashboardPath(roleCode);
       }, 1500);
     }
   }, [isAuthenticated, user, token, navigate]);

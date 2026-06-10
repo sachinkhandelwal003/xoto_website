@@ -193,7 +193,7 @@ const CustomerLogin = () => {
       });
 
       setTimeout(() => {
-        navigate('/dashboard/customer', { replace: true });
+        window.location.href = '/dashboard/customer';
       }, 2000);
     }
   }, [isAuthenticated, user, token, navigate]);

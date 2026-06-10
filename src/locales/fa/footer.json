@@ -11,12 +11,12 @@
     "email": "ایمیل"
   },
   "offerings": [
-    { "label": "محوطه‌سازی", "path": "/landscaping" },
-    { "label": "طراحی داخلی", "path": "/services/interior" },
+    { "label": "محوطه‌سازی", "path": "/service/landscaping" },
+    { "label": "طراحی داخلی", "path": "/service/interior" },
     { "label": "اجاره", "path": "/Property" },
     { "label": "خرید", "path": "/Property" },
     { "label": "فروش", "path": "/Property" },
-    { "label": "وام مسکن", "path": "/mortgage/services" }
+    { "label": "وام مسکن", "path": "/service/mortgage" }
     
   ],
   "resources": [

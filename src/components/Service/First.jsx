@@ -40,7 +40,7 @@ export default function HomeLoanHero() {
           min-width: 120px;
           height: clamp(28px, 3.5vw, 48px);
           background: var(--color-body);
-          z-index: 5;
+          z-index: 1;
           clip-path: polygon(0 0, 55% 0, 100% 100%, 0% 100%);
         }
         
@@ -52,7 +52,7 @@ export default function HomeLoanHero() {
           min-width: 120px;
           height: clamp(28px, 3.5vw, 48px);
           background: var(--color-body);
-          z-index: 5;
+          z-index: 1;
           clip-path: polygon(47% 0, 100% 0, 100% 100%, 0% 100%);
         }
       `}</style>

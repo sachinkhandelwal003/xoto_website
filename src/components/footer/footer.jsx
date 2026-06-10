@@ -131,6 +131,7 @@ useEffect(() => {
 
         <p
           className="text-lg font-bold mt-2"
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{ __html: company.slogan }}
         />
 
@@ -292,6 +293,7 @@ useEffect(() => {
             <img src={logoNewImage} className="w-[163px] h-[65px] mb-4" />
             <p
               className="font-bold text-[20px]"
+              suppressHydrationWarning
               dangerouslySetInnerHTML={{ __html: company.slogan }}
             />
             <p className="mt-3 text-white/70">{company.description}</p>

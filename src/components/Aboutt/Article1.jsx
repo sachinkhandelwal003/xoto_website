@@ -1,5 +1,5 @@
 import React from "react";
-import bgImage from "../../assets/img/top-view-dubai 2.jpg";
+import bgImage from "../../assets/img/abouthomepage.jpg";
 import { useTranslation } from "react-i18next";
 
 const Article1 = () => {

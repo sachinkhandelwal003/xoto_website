@@ -1,30 +1,272 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { notification, Select } from 'antd';
+import { notification } from "antd";
 import { useTranslation } from "react-i18next";
 import { apiService } from "../../manageApi/utils/custom.apiservice";
 import { Country, State, City } from "country-state-city";
 import {
   X, ArrowRight, Phone, Mail, MessageCircle, User, BedDouble,
-  Home, Building2, MapPin, Banknote, FileText
+  Home, Building2, MapPin, Banknote, FileText, ChevronDown
 } from "lucide-react";
 import { isValidPhoneNumber } from "libphonenumber-js";
-
-const { Option } = Select;
-
-const validatePhone = (countryCode, mobile) => {
-  try {
-    const fullNumber = `+${countryCode}${mobile}`;
-    return isValidPhoneNumber(fullNumber);
-  } catch {
-    return false;
-  }
-};
 
 const PHONE_LENGTH_RULES = {
   "971": 9, "91": 10, "7": 10, "1": 10, "44": 10,
 };
 
+const validatePhone = (countryCode, mobile) => {
+  try {
+    return isValidPhoneNumber(`+${countryCode}${mobile}`);
+  } catch {
+    return false;
+  }
+};
+
+// ─── Custom Phone Country Select ─────────────────────────────────────────────
+const PhoneCountrySelect = ({ countries, value, onChange }) => {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const ref = useRef(null);
+  const inputRef = useRef(null);
+
+  const selected = countries.find((c) => c.code === value) || countries[0];
+  const filtered = search
+    ? countries.filter(
+        (c) =>
+          c.name.toLowerCase().includes(search.toLowerCase()) ||
+          c.code.includes(search.replace(/\D/g, ""))
+      )
+    : countries;
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) {
+        setOpen(false);
+        setSearch("");
+      }
+    };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [open]);
+
+  useEffect(() => {
+    if (open) setTimeout(() => inputRef.current?.focus(), 30);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative w-full h-full">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        style={{ height: 50 }}
+        className="flex items-center gap-1.5 w-full px-3 bg-white border-2 border-[#e2e8f0] rounded-xl cursor-pointer hover:border-blue-400 transition-all shadow-sm"
+      >
+        {selected && (
+          <img
+            src={`https://flagcdn.com/w20/${selected.iso.toLowerCase()}.png`}
+            srcSet={`https://flagcdn.com/w40/${selected.iso.toLowerCase()}.png 2x`}
+            alt={selected.name}
+            className="w-5 h-[15px] rounded-sm object-cover flex-shrink-0"
+            onError={(e) => { e.target.src = "https://flagcdn.com/w20/un.png"; }}
+          />
+        )}
+        <span className="font-semibold text-sm text-gray-700 whitespace-nowrap">+{selected?.code}</span>
+        <ChevronDown size={14} className="text-gray-400 ml-auto flex-shrink-0" />
+      </button>
+
+      {open && (
+        <div className="absolute top-[calc(100%+5px)] left-0 min-w-[260px] bg-white border border-gray-200 rounded-xl shadow-2xl z-[200] overflow-hidden">
+          <div className="p-2 border-b border-gray-100">
+            <input
+              ref={inputRef}
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search country..."
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-400"
+            />
+          </div>
+          <div className="max-h-56 overflow-y-auto">
+            {filtered.slice(0, 100).map((c) => (
+              <button
+                key={c.iso}
+                type="button"
+                onClick={() => { onChange(c.code); setOpen(false); setSearch(""); }}
+                className={`flex items-center gap-2 w-full px-4 py-2.5 text-left hover:bg-blue-50 border-none text-sm transition-colors ${c.code === value ? "bg-purple-50 font-semibold" : ""}`}
+              >
+                <img
+                  src={`https://flagcdn.com/w20/${c.iso.toLowerCase()}.png`}
+                  alt=""
+                  className="w-5 h-[15px] rounded-sm flex-shrink-0"
+                  onError={(e) => { e.target.src = "https://flagcdn.com/w20/un.png"; }}
+                />
+                <span className="flex-1 text-gray-800">{c.name}</span>
+                <span className="text-purple-600 font-semibold text-xs">+{c.code}</span>
+              </button>
+            ))}
+            {filtered.length === 0 && (
+              <p className="px-4 py-4 text-xs text-gray-400 text-center">No results found</p>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── Custom Searchable Location Select ───────────────────────────────────────
+const LocationSelect = ({ items, value, onChange, placeholder = "Select", disabled = false, isCountry = false }) => {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const ref = useRef(null);
+  const inputRef = useRef(null);
+
+  const getVal = (item) => isCountry ? item.isoCode : (item.isoCode || item.name);
+  const selected = items.find((i) => getVal(i) === value) || null;
+  const filtered = search
+    ? items.filter((i) => i.name.toLowerCase().includes(search.toLowerCase()))
+    : items;
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) { setOpen(false); setSearch(""); }
+    };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [open]);
+
+  useEffect(() => {
+    if (open) setTimeout(() => inputRef.current?.focus(), 30);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative w-full">
+      <button
+        type="button"
+        onClick={() => !disabled && setOpen((o) => !o)}
+        style={{ height: 52, borderRadius: "0.75rem", border: "2px solid #e2e8f0", boxShadow: "0 2px 4px rgba(0,0,0,0.05)" }}
+        className={`flex items-center justify-between gap-2 w-full px-4 bg-white text-sm transition-all ${
+          disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:border-blue-400"
+        }`}
+      >
+        {selected ? (
+          <div className="flex items-center gap-2 min-w-0">
+            {isCountry && selected.isoCode && (
+              <img
+                src={`https://flagcdn.com/w20/${selected.isoCode.toLowerCase()}.png`}
+                alt=""
+                className="w-5 h-[15px] rounded-sm object-cover flex-shrink-0"
+                onError={(e) => { e.target.src = "https://flagcdn.com/w20/un.png"; }}
+              />
+            )}
+            <span className="text-gray-700 font-medium truncate">{selected.name}</span>
+          </div>
+        ) : (
+          <span className="text-[#94a3b8]">{placeholder}</span>
+        )}
+        <ChevronDown size={16} className="text-gray-400 flex-shrink-0" />
+      </button>
+
+      {open && !disabled && (
+        <div className="absolute top-[calc(100%+5px)] left-0 w-full min-w-[260px] bg-white border border-gray-200 rounded-xl shadow-2xl z-[200] overflow-hidden">
+          <div className="p-2 border-b border-gray-100">
+            <input
+              ref={inputRef}
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search..."
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-400"
+            />
+          </div>
+          <div className="max-h-56 overflow-y-auto">
+            {filtered.slice(0, 100).map((item) => {
+              const val = getVal(item);
+              return (
+                <button
+                  key={val}
+                  type="button"
+                  onClick={() => { onChange(val); setOpen(false); setSearch(""); }}
+                  className={`flex items-center gap-2 w-full px-4 py-2.5 text-left hover:bg-blue-50 border-none text-sm transition-colors ${val === value ? "bg-purple-50 font-semibold" : ""}`}
+                >
+                  {isCountry && item.isoCode && (
+                    <img
+                      src={`https://flagcdn.com/w20/${item.isoCode.toLowerCase()}.png`}
+                      alt=""
+                      className="w-5 h-[15px] rounded-sm flex-shrink-0"
+                      onError={(e) => { e.target.src = "https://flagcdn.com/w20/un.png"; }}
+                    />
+                  )}
+                  <span className="flex-1 text-gray-800">{item.name}</span>
+                </button>
+              );
+            })}
+            {filtered.length === 0 && (
+              <p className="px-4 py-4 text-xs text-gray-400 text-center">No results found</p>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── Simple Option Select ─────────────────────────────────────────────────────
+const SimpleSelect = ({ options, value, onChange, placeholder, icon }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  const selected = options.find((o) => o.value === value);
+
+  useEffect(() => {
+    const close = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        style={{ height: 52, borderRadius: "0.75rem", border: "2px solid #e2e8f0", boxShadow: "0 2px 4px rgba(0,0,0,0.05)" }}
+        className="premium-input-btn w-full flex items-center justify-between text-left pl-12 pr-4 bg-white hover:border-blue-400 transition-all"
+      >
+        <span className={selected ? "text-gray-800 text-sm" : "text-[#94a3b8] text-sm"}>
+          {selected?.label || placeholder}
+        </span>
+        <ChevronDown size={16} className="text-gray-400 flex-shrink-0" />
+      </button>
+      {icon && (
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-600 pointer-events-none">
+          {icon}
+        </div>
+      )}
+      {open && (
+        <div className="absolute top-[calc(100%+4px)] left-0 w-full bg-white border border-gray-200 rounded-xl shadow-2xl z-[200] overflow-hidden">
+          {options.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => { onChange(opt.value); setOpen(false); }}
+              className={`flex items-center w-full px-4 py-3 text-left text-sm hover:bg-blue-50 border-none transition-colors ${
+                value === opt.value ? "bg-purple-50 font-semibold text-purple-700" : "text-gray-700"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 export default function HeroSection({ openSellModal, setOpenSellModal }) {
   const navigate = useNavigate();
   const { t } = useTranslation("buy1");
@@ -37,25 +279,21 @@ export default function HeroSection({ openSellModal, setOpenSellModal }) {
   const [api, contextHolder] = notification.useNotification();
 
   useEffect(() => {
-    if (openModal) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    document.body.style.overflow = openModal ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [openModal]);
 
   const countryOptions = useMemo(() => {
     const priorityIsoCodes = ["AE", "IN", "RU", "US", "GB"];
-    return Country.getAllCountries().map((country) => ({
-      name: country.name, code: country.phonecode, iso: country.isoCode,
-    })).sort((a, b) => {
-      const aPriority = priorityIsoCodes.includes(a.iso);
-      const bPriority = priorityIsoCodes.includes(b.iso);
-      if (aPriority && !bPriority) return -1;
-      if (!aPriority && bPriority) return 1;
-      return a.name.localeCompare(b.name);
-    });
+    return Country.getAllCountries()
+      .map((country) => ({ name: country.name, code: country.phonecode, iso: country.isoCode }))
+      .sort((a, b) => {
+        const aPriority = priorityIsoCodes.includes(a.iso);
+        const bPriority = priorityIsoCodes.includes(b.iso);
+        if (aPriority && !bPriority) return -1;
+        if (!aPriority && bPriority) return 1;
+        return a.name.localeCompare(b.name);
+      });
   }, []);
 
   const [sellStates, setSellStates] = useState([]);
@@ -79,21 +317,19 @@ export default function HeroSection({ openSellModal, setOpenSellModal }) {
     }
   };
 
-  const handleSellCountryChange = (value) => {
-    const limit = PHONE_LENGTH_RULES[value] || 15;
-    setSellForm((prev) => ({ ...prev, country_code: value, mobile: prev.mobile.slice(0, limit) }));
+  const handleSellCountryChange = (code) => {
+    const limit = PHONE_LENGTH_RULES[code] || 15;
+    setSellForm((prev) => ({ ...prev, country_code: code, mobile: prev.mobile.slice(0, limit) }));
   };
 
   const handleSellLocationCountry = (isoCode) => {
-    const updatedStates = State.getStatesOfCountry(isoCode);
-    setSellStates(updatedStates);
+    setSellStates(State.getStatesOfCountry(isoCode));
     setSellCities([]);
     setSellForm((prev) => ({ ...prev, location_country: isoCode, state: null, city: null }));
   };
 
   const handleSellLocationState = (stateCode) => {
-    const updatedCities = City.getCitiesOfState(sellForm.location_country, stateCode);
-    setSellCities(updatedCities);
+    setSellCities(City.getCitiesOfState(sellForm.location_country, stateCode));
     setSellForm((prev) => ({ ...prev, state: stateCode, city: null }));
   };
 
@@ -102,20 +338,18 @@ export default function HeroSection({ openSellModal, setOpenSellModal }) {
   };
 
   const openNotification = (type, title, description) => {
-    api[type]({ message: title, description: description, placement: 'topRight' });
+    api[type]({ message: title, description, placement: "topRight" });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    const isPhoneValid = validatePhone(sellForm.country_code, sellForm.mobile);
-    if (!isPhoneValid) {
+    if (!validatePhone(sellForm.country_code, sellForm.mobile)) {
       openNotification("error", "Validation Error", "Please enter a valid phone number for selected country");
       setLoading(false);
       return;
     }
-
     if (!sellForm.location_country) {
       openNotification("error", "Validation Error", "Please select a country");
       setLoading(false);
@@ -147,31 +381,20 @@ export default function HeroSection({ openSellModal, setOpenSellModal }) {
       message: sellForm.description || undefined,
       requirements: {
         property_type: sellForm.listing_type || undefined,
-        location_preferences: [
-          {
-            area: [cityName, stateName, countryName].filter(Boolean).join(", "),
-            priority: 1,
-          },
-        ],
+        location_preferences: [{ area: [cityName, stateName, countryName].filter(Boolean).join(", "), priority: 1 }],
         bedrooms: sellForm.bedroom_config ? Number(sellForm.bedroom_config) : undefined,
         budget_min: Number(sellForm.price) || undefined,
         additional_notes: [
           sellForm.project_name && `Project: ${sellForm.project_name}`,
           sellForm.area && `Area/Locality: ${sellForm.area}`,
-        ]
-          .filter(Boolean)
-          .join(" | ") || undefined,
+        ].filter(Boolean).join(" | ") || undefined,
       },
     };
 
     try {
       const response = await apiService.post("/gridlead/website-lead", payload);
       if (response.success) {
-        openNotification(
-          "success",
-          "Request Submitted Successfully",
-          t("toast.success", { name: sellForm.first_name })
-        );
+        openNotification("success", "Request Submitted Successfully", t("toast.success", { name: sellForm.first_name }));
         setOpenModal(false);
         setSellForm({
           first_name: "", last_name: "", email: "", country_code: "971", mobile: "",
@@ -198,20 +421,17 @@ export default function HeroSection({ openSellModal, setOpenSellModal }) {
 
       {/* ── HERO SECTION ── */}
       <section className="relative w-full overflow-hidden font-dm h-140 bg-[var(--color-body)]">
-
         <div className="absolute inset-0 bg-cover bg-center bg-no-repeat hero-bg-image">
           <div className="absolute inset-0 bg-black/40" />
         </div>
-
         <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 text-center text-white">
           <h1
             className="mx-auto mb-8 max-w-5xl heading-light flex flex-col items-center gap-2 sm:gap-4 text-center"
-            style={{ fontSize: 'clamp(28px, 8vw, 54px)', lineHeight: '1.15' }}
+            style={{ fontSize: "clamp(28px, 8vw, 54px)", lineHeight: "1.15" }}
           >
             <span>{t("hero.title.line1")}</span>
             <span>{t("hero.title.line2")}</span>
           </h1>
-
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-center">
             <button
               onClick={() => navigate("/Property#rent")}
@@ -233,17 +453,16 @@ export default function HeroSection({ openSellModal, setOpenSellModal }) {
             </button>
           </div>
         </div>
-
         <div className="clip-shape-left" />
         <div className="clip-shape-right" />
       </section>
 
-      {/* ── MODAL ── */}
+      {/* ── SELL PROPERTY MODAL ── */}
       {openModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4">
           <div className="bg-gradient-to-br from-white via-blue-50 to-purple-50 w-full max-w-4xl rounded-2xl sm:rounded-3xl shadow-2xl relative max-h-[95vh] overflow-hidden flex flex-col border border-white/20">
 
-            {/* Close button */}
+            {/* Close */}
             <button
               onClick={() => setOpenModal(false)}
               className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-gradient-to-r from-red-500 to-pink-500 text-white w-9 h-9 sm:w-10 sm:h-10 rounded-full hover:scale-110 transition-all duration-300 flex items-center justify-center shadow-lg z-20"
@@ -263,31 +482,23 @@ export default function HeroSection({ openSellModal, setOpenSellModal }) {
               </div>
             </div>
 
-            {/* Scrollable form body */}
+            {/* Scrollable body */}
             <div className="p-4 sm:p-6 md:p-8 overflow-y-auto custom-scrollbar flex-1">
               <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
 
-                {/* Name row */}
+                {/* Name */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div className="relative">
                     <input
-                      name="first_name"
-                      value={sellForm.first_name}
-                      onChange={handleSellChange}
-                      placeholder={`${t("form.firstName")} *`}
-                      required
-                      className="premium-input pl-12"
+                      name="first_name" value={sellForm.first_name} onChange={handleSellChange}
+                      placeholder={`${t("form.firstName")} *`} required className="premium-input pl-12"
                     />
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-600"><User size={18} /></div>
                   </div>
                   <div className="relative">
                     <input
-                      name="last_name"
-                      value={sellForm.last_name}
-                      onChange={handleSellChange}
-                      placeholder={`${t("form.lastName")} *`}
-                      required
-                      className="premium-input pl-12"
+                      name="last_name" value={sellForm.last_name} onChange={handleSellChange}
+                      placeholder={`${t("form.lastName")} *`} required className="premium-input pl-12"
                     />
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-600"><User size={18} /></div>
                   </div>
@@ -296,135 +507,88 @@ export default function HeroSection({ openSellModal, setOpenSellModal }) {
                 {/* Email */}
                 <div className="relative">
                   <input
-                    name="email"
-                    type="email"
-                    value={sellForm.email}
-                    onChange={handleSellChange}
-                    placeholder={t("form.email")}
-                    required
-                    className="premium-input pl-12"
+                    name="email" type="email" value={sellForm.email} onChange={handleSellChange}
+                    placeholder={t("form.email")} required className="premium-input pl-12"
                   />
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-600"><Mail size={18} /></div>
                 </div>
 
                 {/* Phone */}
-                <div className="flex flex-col xs:flex-row gap-3 items-stretch xs:items-center">
-                  <div className="w-full xs:w-[130px] sm:w-[140px] flex-shrink-0" style={{ height: 50 }}>
-                    <Select
+                <div className="flex gap-3 items-stretch">
+                  <div className="w-[130px] sm:w-[145px] flex-shrink-0">
+                    <PhoneCountrySelect
+                      countries={countryOptions}
                       value={sellForm.country_code}
                       onChange={handleSellCountryChange}
-                      showSearch
-                      optionFilterProp="children"
-                      filterOption={(input, option) =>
-                        option.children.props?.children[1]?.props?.children[1]?.toLowerCase().includes(input.toLowerCase()) ||
-                        option.value.includes(input)
-                      }
-                      className="w-full h-full custom-select-hero"
-                      dropdownMatchSelectWidth={280}
-                    >
-                      {countryOptions.map((item) => (
-                        <Option key={item.iso} value={item.code}>
-                          <div className="flex items-center">
-                            <img
-                              src={`https://flagcdn.com/w20/${item.iso.toLowerCase()}.png`}
-                              srcSet={`https://flagcdn.com/w40/${item.iso.toLowerCase()}.png 2x`}
-                              width="20"
-                              alt={item.name}
-                              style={{ marginRight: 8, borderRadius: 2, objectFit: 'cover' }}
-                            />
-                            <span>+{item.code}</span>
-                          </div>
-                        </Option>
-                      ))}
-                    </Select>
+                    />
                   </div>
                   <div className="relative flex-1">
                     <input
-                      name="mobile"
-                      type="text"
-                      inputMode="numeric"
-                      value={sellForm.mobile}
-                      onChange={handleSellChange}
-                      placeholder={`${t("form.phone")} *`}
-                      required
-                      className="premium-input pl-12"
-                      style={{ height: 50 }}
+                      name="mobile" type="text" inputMode="numeric"
+                      value={sellForm.mobile} onChange={handleSellChange}
+                      placeholder={`${t("form.phone")} *`} required
+                      className="premium-input pl-12 w-full" style={{ height: 50 }}
                     />
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-600"><Phone size={18} /></div>
                   </div>
                 </div>
 
-                {/* ── SELL FIELDS ── */}
+                {/* Sell fields */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
 
                   {/* Listing type */}
-                  <div className="relative">
-                    <input
-                      name="listing_type"
-                      value={sellForm.listing_type}
-                      onChange={handleSellChange}
-                      placeholder={t("form.sell.listing_type")}
-                      className="premium-input pl-12"
-                    />
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-600"><Home size={18} /></div>
-                  </div>
+                  <SimpleSelect
+                    value={sellForm.listing_type}
+                    onChange={(val) => setSellForm((p) => ({ ...p, listing_type: val }))}
+                    placeholder={t("form.sell.listing_type") || "Property Type"}
+                    icon={<Home size={18} />}
+                    options={[
+                      { value: "Apartment", label: "Apartment" },
+                      { value: "Villa", label: "Villa" },
+                      { value: "Townhouse", label: "Townhouse" },
+                      { value: "Penthouse", label: "Penthouse" },
+                      { value: "Duplex", label: "Duplex" },
+                      { value: "Studio", label: "Studio" },
+                      { value: "Hotel Apartment", label: "Hotel Apartment" },
+                      { value: "Office", label: "Office" },
+                      { value: "Retail", label: "Retail" },
+                      { value: "Warehouse", label: "Warehouse" },
+                      { value: "Land / Plot", label: "Land / Plot" },
+                    ]}
+                  />
 
                   {/* Country */}
-                  <Select
-                    placeholder="Select Country"
-                    showSearch
-                    optionFilterProp="children"
+                  <LocationSelect
+                    items={Country.getAllCountries()}
+                    value={sellForm.location_country}
                     onChange={handleSellLocationCountry}
-                    filterOption={(input, option) => option.children.toLowerCase().includes(input.toLowerCase())}
-                    className="w-full custom-select-hero"
-                    style={{ height: 52 }}
-                    dropdownMatchSelectWidth={false}
-                  >
-                    {countryOptions.map((country) => (
-                      <Option key={country.iso} value={country.iso}>{country.name}</Option>
-                    ))}
-                  </Select>
+                    placeholder="Select Country"
+                    isCountry={true}
+                  />
 
                   {/* State */}
-                  <Select
-                    placeholder="Select State"
-                    showSearch
-                    optionFilterProp="children"
+                  <LocationSelect
+                    items={sellStates}
+                    value={sellForm.state}
                     onChange={handleSellLocationState}
                     disabled={!sellStates.length}
-                    filterOption={(input, option) => option.children.toLowerCase().includes(input.toLowerCase())}
-                    className="w-full custom-select-hero"
-                    style={{ height: 52 }}
-                  >
-                    {sellStates.map((state) => (
-                      <Option key={state.isoCode} value={state.isoCode}>{state.name}</Option>
-                    ))}
-                  </Select>
+                    placeholder="Select State"
+                  />
 
                   {/* City */}
-                  <Select
-                    placeholder={t("form.sell.city")}
-                    showSearch
-                    optionFilterProp="children"
+                  <LocationSelect
+                    items={sellCities}
+                    value={sellForm.city}
                     onChange={handleSellLocationCity}
                     disabled={!sellCities.length}
-                    filterOption={(input, option) => option.children.toLowerCase().includes(input.toLowerCase())}
-                    className="w-full custom-select-hero"
-                    style={{ height: 52 }}
-                  >
-                    {sellCities.map((city) => (
-                      <Option key={city.name} value={city.name}>{city.name}</Option>
-                    ))}
-                  </Select>
+                    placeholder={t("form.sell.city")}
+                  />
 
                   {/* Area */}
                   <div className="relative">
                     <input
-                      name="area"
-                      value={sellForm.area}
-                      onChange={handleSellChange}
-                      placeholder={t("form.sell.area")}
-                      className="premium-input pl-12"
+                      name="area" value={sellForm.area} onChange={handleSellChange}
+                      placeholder={t("form.sell.area")} className="premium-input pl-12"
                     />
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-600"><MapPin size={18} /></div>
                   </div>
@@ -432,36 +596,34 @@ export default function HeroSection({ openSellModal, setOpenSellModal }) {
                   {/* Project name */}
                   <div className="relative">
                     <input
-                      name="project_name"
-                      value={sellForm.project_name}
-                      onChange={handleSellChange}
-                      placeholder={t("form.sell.project_name")}
-                      className="premium-input pl-12"
+                      name="project_name" value={sellForm.project_name} onChange={handleSellChange}
+                      placeholder={t("form.sell.project_name")} className="premium-input pl-12"
                     />
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-600"><Building2 size={18} /></div>
                   </div>
 
-                  {/* Bedroom config */}
-                  <div className="relative">
-                    <input
-                      name="bedroom_config"
-                      value={sellForm.bedroom_config}
-                      onChange={handleSellChange}
-                      placeholder={t("form.sell.bedroom_config")}
-                      className="premium-input pl-12"
-                    />
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-600"><BedDouble size={18} /></div>
-                  </div>
+                  {/* Bedroom */}
+                  <SimpleSelect
+                    value={sellForm.bedroom_config}
+                    onChange={(val) => setSellForm((p) => ({ ...p, bedroom_config: val }))}
+                    placeholder={t("form.sell.bedroom_config") || "Bedrooms"}
+                    icon={<BedDouble size={18} />}
+                    options={[
+                      { value: "0", label: "Studio" },
+                      { value: "1", label: "1 Bedroom" },
+                      { value: "2", label: "2 Bedrooms" },
+                      { value: "3", label: "3 Bedrooms" },
+                      { value: "4", label: "4 Bedrooms" },
+                      { value: "5", label: "5 Bedrooms" },
+                      { value: "6", label: "6+ Bedrooms" },
+                    ]}
+                  />
 
                   {/* Price */}
                   <div className="relative">
                     <input
-                      type="number"
-                      name="price"
-                      value={sellForm.price}
-                      onChange={handleSellChange}
-                      placeholder={t("form.sell.price")}
-                      className="premium-input pl-12"
+                      type="number" name="price" value={sellForm.price} onChange={handleSellChange}
+                      placeholder={t("form.sell.price")} className="premium-input pl-12"
                       onWheel={(e) => e.target.blur()}
                     />
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-600"><Banknote size={18} /></div>
@@ -471,11 +633,8 @@ export default function HeroSection({ openSellModal, setOpenSellModal }) {
                 {/* Description */}
                 <div className="relative">
                   <textarea
-                    name="description"
-                    value={sellForm.description}
-                    onChange={handleSellChange}
-                    placeholder={t("form.sell.description")}
-                    rows={4}
+                    name="description" value={sellForm.description} onChange={handleSellChange}
+                    placeholder={t("form.sell.description")} rows={4}
                     className="premium-input pl-12 pt-4 resize-none"
                   />
                   <div className="absolute left-4 top-5 text-blue-600"><FileText size={18} /></div>
@@ -492,12 +651,9 @@ export default function HeroSection({ openSellModal, setOpenSellModal }) {
                     ].map(({ value, icon, label }) => (
                       <label key={value} className="relative cursor-pointer">
                         <input
-                          type="radio"
-                          name="preferred_contact"
-                          value={value}
+                          type="radio" name="preferred_contact" value={value}
                           checked={sellForm.preferred_contact === value}
-                          onChange={handleSellChange}
-                          className="sr-only peer"
+                          onChange={handleSellChange} className="sr-only peer"
                         />
                         <div className="p-2 sm:p-4 rounded-xl border-2 border-gray-200 bg-white transition-all duration-300 hover:border-blue-400 peer-checked:border-blue-600 peer-checked:bg-gradient-to-r peer-checked:from-blue-50 peer-checked:to-purple-50 peer-checked:shadow-lg">
                           <div className="flex flex-col items-center gap-1 sm:gap-2">
@@ -516,20 +672,15 @@ export default function HeroSection({ openSellModal, setOpenSellModal }) {
                 <div className="space-y-3 pt-2">
                   <label className="flex items-start gap-3 text-gray-700 text-xs sm:text-sm p-3 rounded-lg bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-100 cursor-pointer">
                     <input
-                      type="checkbox"
-                      className="mt-0.5 w-4 h-4 flex-shrink-0 cursor-pointer"
-                      checked={marketingAccepted}
-                      onChange={(e) => setMarketingAccepted(e.target.checked)}
+                      type="checkbox" className="mt-0.5 w-4 h-4 flex-shrink-0 cursor-pointer"
+                      checked={marketingAccepted} onChange={(e) => setMarketingAccepted(e.target.checked)}
                     />
                     <span>{t("checkbox.marketing")}</span>
                   </label>
                   <label className="flex items-start gap-3 text-gray-700 text-xs sm:text-sm p-3 rounded-lg bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-100 cursor-pointer">
                     <input
-                      type="checkbox"
-                      required
-                      className="mt-0.5 w-4 h-4 flex-shrink-0 cursor-pointer"
-                      checked={termsAccepted}
-                      onChange={(e) => setTermsAccepted(e.target.checked)}
+                      type="checkbox" required className="mt-0.5 w-4 h-4 flex-shrink-0 cursor-pointer"
+                      checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)}
                     />
                     <span>{t("checkbox.terms")}</span>
                   </label>
@@ -591,25 +742,9 @@ export default function HeroSection({ openSellModal, setOpenSellModal }) {
           transform: translateY(-1px);
         }
         .premium-input::placeholder { color: #94a3b8; }
-        @media (min-width: 360px) {
-          .xs-flex-row { flex-direction: row !important; }
-          .xs-w-130 { width: 130px !important; }
-          .xs-items-center { align-items: center !important; }
-        }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: linear-gradient(to bottom,#3b82f6,#8b5cf6); border-radius: 4px; }
-        .custom-select-hero .ant-select-selector {
-          border-radius: 0.75rem !important; border: 2px solid #e2e8f0 !important;
-          height: 100% !important; min-height: 50px !important;
-          display: flex !important; align-items: center !important;
-          padding-left: 8px !important; box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
-        }
-        .custom-select-hero .ant-select-selector:hover { border-color: #3b82f6 !important; }
-        .custom-select-hero.ant-select-focused .ant-select-selector {
-          border-color: #3b82f6 !important;
-          box-shadow: 0 0 0 4px rgba(59,130,246,0.1) !important;
-        }
         @media (max-width: 480px) { .premium-input { font-size: 0.875rem; } }
       ` }} />
     </>

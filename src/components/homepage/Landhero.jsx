@@ -120,19 +120,35 @@ export default function HeroSection() {
 
         </div>
 
-        {/* CTA Button */}
-        <Link to="/estimate/calculator">
+        {/* CTA Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <Link to="/estimate/calculator">
+            <motion.button
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="bg-transparent text-white px-12 py-4 rounded-lg text-lg shadow-xl border-2 border-white/70 hover:bg-[#5C039B] hover:text-white hover:border-[#5C039B]"
+            >
+              {t("cta.estimate")}
+            </motion.button>
+          </Link>
+
           <motion.button
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
+            transition={{ delay: 0.9 }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="bg-transparent text-white px-12 py-4 rounded-lg text-lg shadow-xl border-2 border-white/70 hover:bg-[#5C039B] hover:text-white hover:border-[#5C039B]"
+            onClick={() => {
+              document.getElementById('consultation-section')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="bg-[#5C039B] text-white px-12 py-4 rounded-lg text-lg shadow-xl border-2 border-[#5C039B] hover:bg-purple-800"
           >
-            {t("cta.estimate")}
+            Book Free Consultation
           </motion.button>
-        </Link>
+        </div>
 
       </div>
     </section>

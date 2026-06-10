@@ -88,11 +88,10 @@ const Page2 = () => {
       setLoadingProperties(true);
       try {
         const response = await apiService.get(
-          `/property/get-all-properties?page=1&limit=30&isFeatured=false&search=${searchTerm}`
+          `/properties/public?page=1&limit=30&search=${searchTerm}`
         );
-        if (response?.success && Array.isArray(response.data)) {
           setProperties(response.data);
-        }
+        
       } catch (err) {
         console.error("API Error:", err);
       } finally {

@@ -1,4 +1,4 @@
-import bannerImage from '../../assets/img/ecommercebanner.webp'; // Placeholder for banner image
+import bannerImage from '../../assets/img/ecommercebanner.png'; // Placeholder for banner image
 
 const Banner = () => {
   return (

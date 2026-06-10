@@ -29,7 +29,7 @@ const hideNavbarPaths = [
   '/aiPlanner/landscape',
   '/estimate/calculator',
   '/accountant/login',
-  '/ecommerce/seller',
+  '/seller/registration',
   '/aiPlanner/enhance',
   '/aiPlanner/sky',
   '/aiPlanner/virtual',
@@ -50,7 +50,7 @@ const hideFooterPaths = [
   '/aiPlanner/landscape',
   '/estimate/calculator',
   '/accountant/login',
-  '/ecommerce/seller',
+  '/seller/registration',
   '/freelancer/registration',
   '/aiPlanner/enhance',
   '/aiPlanner/sky',
@@ -86,7 +86,32 @@ const freelancerNavbarPaths = [
 
 export default function AppLayout({ children }) {
   const router = useRouter();
-  const pathname = router.asPath.split('?')[0].split('#')[0];
+  const [currentPath, setCurrentPath] = useState('');
+
+  useEffect(() => {
+    setCurrentPath(window.location.pathname);
+
+    const handleRouteChange = () => {
+      setCurrentPath(window.location.pathname);
+    };
+
+    router.events.on('routeChangeComplete', handleRouteChange);
+    window.addEventListener('popstate', handleRouteChange);
+
+    const interval = setInterval(() => {
+      if (window.location.pathname !== currentPath) {
+        setCurrentPath(window.location.pathname);
+      }
+    }, 200);
+
+    return () => {
+      router.events.off('routeChangeComplete', handleRouteChange);
+      window.removeEventListener('popstate', handleRouteChange);
+      clearInterval(interval);
+    };
+  }, [currentPath, router.events]);
+
+  const pathname = (currentPath || router.asPath).split('?')[0].split('#')[0];
   const { user, token } = useSelector((s) => s.auth || {});
 
   const [loadChatbot, setLoadChatbot] = useState(false);
@@ -115,7 +140,7 @@ export default function AppLayout({ children }) {
     pathname.includes('register') ||
     pathname.startsWith('/proposal/view/link') ||
     pathname.startsWith('/dashboard') ||
-    pathname.startsWith('/ecommerce/seller') ||
+    pathname.startsWith('/seller/registration') ||
     pathname.startsWith('/freelancer/registration');
 
   const showFreelancerNavbar = freelancerNavbarPaths.some(

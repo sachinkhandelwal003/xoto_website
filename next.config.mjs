@@ -5,7 +5,10 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: false,
+  reactStrictMode: true,
+  swcMinify: true,
+  compress: true,
+  poweredByHeader: false,
 
   // Allow images from any domain (mirrors the existing setup)
   images: {
@@ -13,6 +16,8 @@ const nextConfig = {
       { protocol: 'https', hostname: '**' },
       { protocol: 'http', hostname: '**' },
     ],
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60,
   },
 
   webpack(config) {
@@ -58,6 +63,14 @@ const nextConfig = {
 
   // Transpile packages that ship ESM-only
   transpilePackages: ['swiper', 'ssr-window', 'dom7', 'react-dnd', 'react-dnd-html5-backend', 'react-router-dom', 'react-router'],
+
+  // Production optimizations
+  onDemandEntries: {
+    // period (in ms) where the server will keep pages in the buffer
+    maxInactiveAge: 25 * 1000,
+    // number of pages that should be kept simultaneously without being disposed
+    pagesBufferLength: 2,
+  },
 };
 
 export default nextConfig;
