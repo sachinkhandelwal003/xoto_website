@@ -88,7 +88,13 @@ import DeveloperList from "./pages/DeveloperList";
 import DeveloperDetail from "./pages/Developerdetail";
 import DealCommissionManager from "./pages/DealCommissionManager";
 import SuperAdminHome from "./pages/SuperAdmin/SuperAdminHome";
-import BankProductManagement from "../homepage/BankProductManagement";
+import NewsletterSubscribers from "./pages/dashboardPages/newsletter/NewsletterSubscribers";
+import BankList from "./pages/bank/BankList";
+import BankDetail from "./pages/bank/BankDetail";
+import BankManagement from "./pages/bank/BankManagement";
+import BankProducts from "./pages/bank/BankProducts";
+import BankProductManagement from "./pages/bank/BankProductManagement";
+import Eibor from "./pages/bank/Eibor";
 
 // import AgencyAssignProjects from "../ecommerce/B2C/AgencyAssignProjects";
 
@@ -150,8 +156,8 @@ import CreateRentalProperty from "../../component/Rent/Createrentalproperty";
 import RentalPropertyList from "../../component/Rent/Rentalpropertylist";
 import AdminLeadList from "../../component/Rent/Adminleadlist";
 import Adminfeedbacks from "../../components/footer/Adminfeedbacks";
-import BankProductViewwithdocuments from "../homepage/BankProductViewwithdocuments";
-import BankProductDocuments from "../homepage/BankProductDocuments";
+import BankProductViewwithdocuments from "./pages/bank/BankProductViewwithdocuments";
+import BankProductDocuments from "./pages/bank/BankProductDocuments";
 // import GridAgentLeadDetail from "../Grid/GridAgent/GridAgentLeadDetail";
 // import GridAgentLeadDetailadmin from "../Grid/GridAdmin.jsx/GridAgentLeadDetailadmin";
 // import GridAdvisorLeadDetail from "../Grid/AdvisorGrid/GridAdvisorLeadDetail";
@@ -241,7 +247,8 @@ const componentMap = {
   "developer/property": <Propertymanagement />
   , "create": <Blog />,
   "products/brands": <AddBrand />,
-  "create-mortgages": <BankProductManagement />
+  "create-mortgages": <BankProductManagement />,
+  newsletter: <NewsletterSubscribers />
 };
 
 
@@ -363,6 +370,12 @@ const CmsRoutes = () => {
 
 
       {/* admin */}
+      <Route path="users" element={<UsersRoleList />} />
+      <Route path="newsletter" element={<NewsletterSubscribers />} />
+      <Route path="deals" element={<Leads />} />
+      <Route path="roles" element={<Role />} />
+      <Route path="permission" element={<Permission />} />
+      <Route path="modules/list" element={<Modules />} />
       <Route path="/agent-list" element={<AgentList />} />
       <Route path="/agency-list" element={<AgencyList />} />
       <Route path="customers/list" element={<CustomerList />} />
@@ -420,6 +433,18 @@ const CmsRoutes = () => {
 
 
 
+
+      {/* Bank & Product Library */}
+      <Route path="bank/list" element={<BankList />} />
+      <Route path="bank/view/:bankId" element={<BankDetail />} />
+      <Route path="bank/manage" element={<BankManagement />} />
+      <Route path="bank/manage/:bankId" element={<BankManagement />} />
+      <Route path="bank/products" element={<BankProducts />} />
+      <Route path="bank/products/manage" element={<BankProductManagement />} />
+      <Route path="bank/products/manage/:productId" element={<BankProductManagement />} />
+      <Route path="bank/products/view/:productId" element={<BankProductViewwithdocuments />} />
+      <Route path="bank/products/documents/:productId" element={<BankProductDocuments />} />
+      <Route path="eibor" element={<Eibor />} />
 
       <Route path="rental/properties" element={<CreateRentalProperty />} />
       <Route path="rental/properties/create" element={<CreateRentalProperty />} />

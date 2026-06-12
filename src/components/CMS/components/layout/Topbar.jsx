@@ -221,7 +221,7 @@ useEffect(() => {
 
   const handleLogout = () => {
     dispatch(logoutUser());
-    navigate("/");
+    window.location.href = "/";
   };
 
   /* ---------------- PROFILE DROPDOWN ---------------- */

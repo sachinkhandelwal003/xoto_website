@@ -2,7 +2,7 @@ const sharp = require("sharp");
 const fs = require("fs");
 const path = require("path");
 
-const INPUT_DIRS = ["./src/assets", "./public"];
+const INPUT_DIRS = ["./src", "./public"];
 const SUPPORTED = [".jpg", ".jpeg", ".png", ".webp"];
 
 // Settings - Quality control
@@ -120,6 +120,20 @@ async function main() {
   console.log(`💾 Saved memory     : ${totalSaved} MB`);
   console.log("─────────────────────────────────");
   console.log("✅ Image compression completed!");
+
+  console.log("\n📦 Setting up favicon...");
+  try {
+    const logoSource = "./src/assets/img/logoXoto.png";
+    const faviconDest = "./public/favicon.png";
+    if (fs.existsSync(logoSource)) {
+      fs.copyFileSync(logoSource, faviconDest);
+      console.log(`✅ Successfully copied ${logoSource} -> ${faviconDest}`);
+    } else {
+      console.log(`⚠️ Logo source not found at ${logoSource}`);
+    }
+  } catch (err) {
+    console.log(`❌ Failed to copy favicon: ${err.message}`);
+  }
 }
 
 main();

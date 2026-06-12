@@ -3,11 +3,18 @@ import { apiService } from "../../manageApi/utils/custom.apiservice"; // ✅ API
 import { useBlogContext } from "../../context/BlogContext";
 import SectionImage from "../../assets/img/Image.png";
 
-const Ai2 = () => {
+const Ai2 = ({ blog: propBlog }) => {
   const { selectedBlogId } = useBlogContext();
-  const [blogImage, setBlogImage] = useState(SectionImage);
+  const [blogImage, setBlogImage] = useState(
+    propBlog ? propBlog.images?.[1] || propBlog.featuredImage || SectionImage : SectionImage
+  );
 
   useEffect(() => {
+    if (propBlog) {
+      setBlogImage(propBlog.images?.[1] || propBlog.featuredImage || SectionImage);
+      return;
+    }
+
     if (!selectedBlogId) return;
 
     apiService
@@ -18,7 +25,7 @@ const Ai2 = () => {
         setBlogImage(data.images?.[1] || data.featuredImage || SectionImage);
       })
       .catch((err) => console.error(err));
-  }, [selectedBlogId]);
+  }, [selectedBlogId, propBlog]);
 
   return (
     <div className="w-full bg-[var(--color-body)] py-12 px-4 flex justify-center">

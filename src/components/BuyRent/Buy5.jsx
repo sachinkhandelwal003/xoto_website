@@ -452,7 +452,7 @@ function PropertyCard({ property, onShowDetails }) {
 
           <div className="flex justify-center mt-12 md:mt-16 relative z-20">
             <button
-              onClick={() => router.push("/properties")}
+              onClick={() => router.push("/properties/explore")}
               className="bg-[#5C039B] text-white px-8 md:px-10 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all hover:bg-[#4b0281]"
             >
               {t("actions.viewMore")}

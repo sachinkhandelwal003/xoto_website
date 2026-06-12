@@ -550,7 +550,7 @@ const CmsRoutes = () => {
       <Route path="leads/:leadId" element={<VaultLeadDetails />} />
       <Route path="vault/lead/:leadId/documents" element={<VaultLeadDocuments />} /> 
       <Route path="leads/:leadId/documents" element={<VaultLeadDocuments />} /> 
-      <Route path="/lead-documents/:leadId"element={<VaultAgentDocument/>} />
+      <Route path="lead-documents/:leadId" element={<VaultAgentDocument/>} />
       <Route path="partner-leads" element={<PartnerAgentleads />} />
       <Route path="partner/lead/:id"element={<PartnerLeadDetails />}/>
       {/* <Route path="proposals/create" element={<CreateProposal />} /> */}
@@ -566,7 +566,7 @@ const CmsRoutes = () => {
       <Route path="mortgage-ops/:id" element={<VaultMortgagedetail />} />
       <Route path="mortgage/dashboard" element={<MortgageOpsDashboard />} />
       <Route path="advisor/dashboard" element={<AdvisorDashboard />} />
-      <Route path="/advisor/adv-leads" element={<AdvisorLeads />} />
+      <Route path="advisor/adv-leads" element={<AdvisorLeads />} />
       <Route path="advisor/upload-documents" element={<AdvisorLeadUploadDocuments />} />
       <Route path="leads/partner/create" element={<IndividualLeadCreate />} />
 
@@ -584,31 +584,29 @@ const CmsRoutes = () => {
 
 
       {/* admin */}
-      <Route path="/agent-list" element={<AgentList />} />
-      <Route path="/agency-list" element={<AgencyList />} />
-      <Route path="/customers/list" element={<CustomerList />} />
+      <Route path="agent-list" element={<AgentList />} />
+      <Route path="agency-list" element={<AgencyList />} />
+      <Route path="customers/list" element={<CustomerList />} />
       {/* <Route path="/agent-registration" element={<AgentRegistration />} /> */}
-      <Route path="/developer-list" element={<DeveloperList />} />
-      <Route path="/onboarding/developer" element={<OnBoardingpage />} />
-      <Route path="/onboarding/agent" element={<OnBoardingAgent />} />
-      <Route path="/onboarding/agency" element={<OnBoardingAgency />} />
+      <Route path="developer-list" element={<DeveloperList />} />
+      <Route path="onboarding/developer" element={<OnBoardingpage />} />
+      <Route path="onboarding/agent" element={<OnBoardingAgent />} />
+      <Route path="onboarding/agency" element={<OnBoardingAgency />} />
 
-      <Route path="/property-list" element={<AdminPropertyGrid />} />
-      <Route path="/DealCommissionManager" element={<DealCommissionManager />} />
-      <Route path="/lead-management" element={<LeadManagement />} />
-      <Route path="/lead-management/:id" element={<AgencyLeadDetailsPage />} />
-      <Route path="/subscription-plans" element={<SubscriptionPlans />} />
-      <Route path="/verification-queue" element={<VerificationQueue />} />
-      <Route path="/ai-training" element={<XobiaTrainingAdmin />} />
-      <Route path="/global-settings" element={<GlobalSettings />} />
-      <Route path="/marketing-hub" element={<XotoBlitzCampaigns />} />
-      {/* <Route path="/admin-chat-requests" element={<AdminChatRequests />} /> */}
-      "
-      <Route path="/admin-chat-requests" element={<AdminChatRequests />} />
-      <Route path="/my-listings" element={<MyListings />} />\
-      <Route path="/properties" element={<AdminPropertyListings />} />
-      <Route path="/properties/:id" element={<AdminPropertyDetail />} />
-      <Route path="/properties/create-offplan" element={<AdminOffPlanCreate />} />
+      <Route path="property-list" element={<AdminPropertyGrid />} />
+      <Route path="DealCommissionManager" element={<DealCommissionManager />} />
+      <Route path="lead-management" element={<LeadManagement />} />
+      <Route path="lead-management/:id" element={<AgencyLeadDetailsPage />} />
+      <Route path="subscription-plans" element={<SubscriptionPlans />} />
+      <Route path="verification-queue" element={<VerificationQueue />} />
+      <Route path="ai-training" element={<XobiaTrainingAdmin />} />
+      <Route path="global-settings" element={<GlobalSettings />} />
+      <Route path="marketing-hub" element={<XotoBlitzCampaigns />} />
+      <Route path="admin-chat-requests" element={<AdminChatRequests />} />
+      <Route path="my-listings" element={<MyListings />} />
+      <Route path="properties" element={<AdminPropertyListings />} />
+      <Route path="properties/:id" element={<AdminPropertyDetail />} />
+      <Route path="properties/create-offplan" element={<AdminOffPlanCreate />} />
       <Route path="developer/property/:id" element={<PropertyDetailPage />} />
 
 

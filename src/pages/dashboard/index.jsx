@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useRouter } from 'next/router';
-import DashboardLoader from '@/components/CMS/components/layout/DashboardLoader';
 
 const roleSlugMap = {
   0: "superadmin",
@@ -42,8 +41,8 @@ export default function DashboardRootPage() {
   }, [user, token, rehydrated, router]);
 
   if (!rehydrated) {
-    return <DashboardLoader />;
-  }
+  return null;
+}
 
   return null;
 }

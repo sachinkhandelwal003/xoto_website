@@ -1,7 +1,23 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
+
+// Automatic cleanup of conflicting superadmin route file
+const conflictingFile = path.resolve(__dirname, 'src/pages/dashboard/superadmin/[[...rest]].jsx');
+if (fs.existsSync(conflictingFile)) {
+  try {
+    fs.unlinkSync(conflictingFile);
+    const parentDir = path.dirname(conflictingFile);
+    if (fs.readdirSync(parentDir).length === 0) {
+      fs.rmdirSync(parentDir);
+    }
+  } catch (e) {
+    console.warn('Could not clean up conflicting superadmin route:', e);
+  }
+}
+
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {

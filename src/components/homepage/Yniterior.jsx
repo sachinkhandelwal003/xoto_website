@@ -47,7 +47,7 @@ export default function App() {
       {/* ────────────────────── EXPLORE DREAM SPACES ────────────────────── */}
       <Dreamspacking />
       {/* ────────────────────── CLIENT TESTIMONIALS (STATIC + PROFESSIONAL) ────────────────────── */}
-      <Fifth />
+      {/* <Fifth /> */}
       {/* last sectionm */}
       <Eco1 />
     </>

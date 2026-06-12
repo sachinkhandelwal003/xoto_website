@@ -6,13 +6,19 @@ import { useBlogContext } from "../../context/BlogContext";
 import Picture from "../../assets/img/Ai.png"; 
 import AvatarImage from "../../assets/img/img.png";
 
-const Ai1 = () => {
+const Ai1 = ({ blog: propBlog }) => {
   const { selectedBlogId } = useBlogContext();
 
-  const [blog, setBlog] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [blog, setBlog] = useState(propBlog || null);
+  const [loading, setLoading] = useState(!propBlog);
 
   useEffect(() => {
+    if (propBlog) {
+      setBlog(propBlog);
+      setLoading(false);
+      return;
+    }
+
     let activeId = selectedBlogId;
 
     if (activeId) {
@@ -40,7 +46,7 @@ const Ai1 = () => {
         console.error(err);
         setLoading(false);
       });
-  }, [selectedBlogId]);
+  }, [selectedBlogId, propBlog]);
 
   if (loading) {
     return (

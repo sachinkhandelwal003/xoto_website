@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { apiService } from "../../../../../manageApi/utils/custom.apiservice";
+import CustomTable from "../../custom/CustomTable";
+import { useSelector } from "react-redux";
 
 import {
   Button,
@@ -32,6 +34,7 @@ import {
   ShoppingOutlined,
   CheckOutlined,
   CloseOutlined,
+  EyeOutlined,
 } from "@ant-design/icons";
 
 import { Tooltip } from "antd";
@@ -56,6 +59,8 @@ const COLOR_OPTIONS = [
 
 const ProductManagementContent = () => {
   const { message, notification } = App.useApp();
+  const { user } = useSelector((s) => s.auth || {});
+  const isSuperAdmin = user?.role?.code === 0 || user?.role?.code === '0';
   const [form] = Form.useForm();
   const [marginForm] = Form.useForm();
 
@@ -75,6 +80,7 @@ const ProductManagementContent = () => {
   const [editingId, setEditingId] = useState(null);
 
   const [marginModalVisible, setMarginModalVisible] = useState(false);
+  const [viewModalVisible, setViewModalVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [currentProduct, setCurrentProduct] = useState(null);
 
@@ -293,6 +299,7 @@ const ProductManagementContent = () => {
   const columns = [
     {
       title: "Product",
+      key: "name",
       render: (_, r) => (
         <Space>
           <img
@@ -310,6 +317,7 @@ const ProductManagementContent = () => {
     },
     {
       title: "Stock",
+      key: "quantity",
       render: (_, r) => (
         <Tag color={r.quantity > 5 ? "success" : "warning"}>
           {r.quantity} in Stock
@@ -318,17 +326,19 @@ const ProductManagementContent = () => {
     },
     {
       title: "Base Price",
+      key: "price",
       render: (_, r) => <Text strong>AED {r.price}</Text>,
     },
     {
       title: "Sale Price",
+      key: "salePrice",
       render: (_, r) => (
         <Text strong>{r.salePrice ? `AED ${r.salePrice}` : "--"}</Text>
       ),
     },
     {
       title: "Status",
-      dataIndex: "isActive",
+      key: "isActive",
       render: (isActive) => (
         <Tag color={isActive ? "success" : "error"}>
           {isActive ? "Active" : "Inactive"}
@@ -337,44 +347,60 @@ const ProductManagementContent = () => {
     },
     {
       title: "Action",
+      key: "action",
       render: (_, record) => (
         <Space>
-          <Tooltip title="Add Margin">
+          <Tooltip title="View Details">
             <Button
               type="text"
-              icon={<PercentageOutlined />}
+              icon={<EyeOutlined style={{ color: "#7c3aed" }} />}
               onClick={() => {
                 setSelectedProduct(record);
-                marginForm.setFieldsValue({
-                  marginType: record.marginType || "fixed",
-                  marginValue: record.marginValue || 0,
-                });
-                setMarginModalVisible(true);
+                setViewModalVisible(true);
               }}
             />
           </Tooltip>
 
-          <Button
-            type="text"
-            icon={<EditOutlined />}
-            onClick={() => {
-              setEditingId(record._id);
-              setCurrentProduct(record);
-              form.setFieldsValue({
-                ...record,
-                brandName: record.brandName?._id || record.brandName,
-                category: record.category?._id || record.category,
-              });
-              setModalVisible(true);
-            }}
-          />
+          {!isSuperAdmin && (
+            <>
+              <Tooltip title="Add Margin">
+                <Button
+                  type="text"
+                  icon={<PercentageOutlined />}
+                  onClick={() => {
+                    setSelectedProduct(record);
+                    marginForm.setFieldsValue({
+                      marginType: record.marginType || "fixed",
+                      marginValue: record.marginValue || 0,
+                    });
+                    setMarginModalVisible(true);
+                  }}
+                />
+              </Tooltip>
 
-          <Popconfirm
-            title="Delete Product?"
-            onConfirm={() => handleDelete(record._id)}
-          >
-            <Button type="text" danger icon={<DeleteOutlined />} />
-          </Popconfirm>
+              <Button
+                type="text"
+                icon={<EditOutlined />}
+                onClick={() => {
+                  setEditingId(record._id);
+                  setCurrentProduct(record);
+                  form.setFieldsValue({
+                    ...record,
+                    brandName: record.brandName?._id || record.brandName,
+                    category: record.category?._id || record.category,
+                  });
+                  setModalVisible(true);
+                }}
+              />
+
+              <Popconfirm
+                title="Delete Product?"
+                onConfirm={() => handleDelete(record._id)}
+              >
+                <Button type="text" danger icon={<DeleteOutlined />} />
+              </Popconfirm>
+            </>
+          )}
         </Space>
       ),
     },
@@ -386,42 +412,38 @@ const ProductManagementContent = () => {
       <div className="flex justify-between mb-6">
         <Title level={3}>Product Management</Title>
 
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          style={{ background: THEME.primary }}
-          onClick={() => {
-            setEditingId(null);
-            form.resetFields();
-            setModalVisible(true);
-          }}
-        >
-          Add Product
-        </Button>
+        {!isSuperAdmin && (
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            style={{ background: THEME.primary }}
+            onClick={() => {
+              setEditingId(null);
+              form.resetFields();
+              setModalVisible(true);
+            }}
+          >
+            Add Product
+          </Button>
+        )}
       </div>
 
-      <Card>
-        <Input
-          prefix={<SearchOutlined />}
-          placeholder="Search products"
-          onChange={(e) => setSearchText(e.target.value)}
-        />
-      </Card>
-
-      <Card className="mt-4">
-        <Table
+      <div className="mt-4">
+        <CustomTable
           columns={columns}
-          dataSource={products}
-          rowKey="_id"
-          loading={loading}
-          pagination={{
-            current: currentPage,
-            pageSize,
-            total,
-            onChange: (p) => setCurrentPage(p),
+          data={products}
+          totalItems={total}
+          currentPage={currentPage}
+          itemsPerPage={pageSize}
+          onPageChange={(page) => setCurrentPage(page)}
+          onFilter={(filters) => {
+            setSearchText(filters.search || "");
+            setCurrentPage(1);
           }}
+          loading={loading}
+          showSearch={true}
         />
-      </Card>
+      </div>
 
       {/* FORM MODAL */}
       <Modal
@@ -441,6 +463,258 @@ const ProductManagementContent = () => {
           {/* FULL FORM SAME AS BEFORE */}
 
         </Form>
+      </Modal>
+
+      {/* VIEW PRODUCT DETAIL MODAL */}
+      <Modal
+        title={
+          <Space>
+            <ShoppingOutlined style={{ color: THEME.primary }} />
+            <span style={{ fontWeight: 800 }}>Product Details</span>
+          </Space>
+        }
+        open={viewModalVisible}
+        onCancel={() => {
+          setViewModalVisible(false);
+          setSelectedProduct(null);
+        }}
+        footer={[
+          <Button
+            key="close"
+            type="primary"
+            onClick={() => setViewModalVisible(false)}
+            style={{ background: THEME.primary, borderRadius: 8 }}
+          >
+            Close
+          </Button>,
+        ]}
+        width={800}
+      >
+        {selectedProduct && (
+          <div style={{ padding: "10px 0" }}>
+            <Row gutter={[24, 24]}>
+              <Col xs={24} md={10}>
+                <div
+                  style={{
+                    border: "1px solid #f0f0f0",
+                    borderRadius: 12,
+                    padding: 12,
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    background: "#fafafa",
+                    height: 260,
+                  }}
+                >
+                  <img
+                    src={selectedProduct.photos?.[0]}
+                    alt={selectedProduct.name}
+                    style={{
+                      maxWidth: "100%",
+                      maxHeight: "100%",
+                      objectFit: "contain",
+                      borderRadius: 8,
+                    }}
+                  />
+                </div>
+                {selectedProduct.photos && selectedProduct.photos.length > 1 && (
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 8,
+                      marginTop: 12,
+                      overflowX: "auto",
+                      paddingBottom: 4,
+                    }}
+                  >
+                    {selectedProduct.photos.map((p, idx) => (
+                      <img
+                        key={idx}
+                        src={p}
+                        alt=""
+                        style={{
+                          width: 60,
+                          height: 60,
+                          objectFit: "cover",
+                          borderRadius: 6,
+                          border: "1px solid #e5e7eb",
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </Col>
+
+              <Col xs={24} md={14}>
+                <Title level={3} style={{ margin: 0, fontWeight: 800 }}>
+                  {selectedProduct.name}
+                </Title>
+                <Space style={{ marginTop: 8 }}>
+                  <Tag color="purple" style={{ borderRadius: 4, fontWeight: 600 }}>
+                    {selectedProduct.category?.name ||
+                      selectedProduct.category?.categoryName ||
+                      "—"}
+                  </Tag>
+                  <Tag color="blue" style={{ borderRadius: 4, fontWeight: 600 }}>
+                    {selectedProduct.brandName?.brandName || "—"}
+                  </Tag>
+                </Space>
+
+                <Divider style={{ margin: "16px 0" }} />
+
+                <Row gutter={[16, 16]}>
+                  <Col span={12}>
+                    <Statistic
+                      title="Base Price"
+                      value={selectedProduct.price}
+                      prefix="AED "
+                      precision={2}
+                      valueStyle={{ fontWeight: 800, fontSize: 18 }}
+                    />
+                  </Col>
+                  <Col span={12}>
+                    <Statistic
+                      title="Sale Price"
+                      value={selectedProduct.salePrice || "--"}
+                      prefix={selectedProduct.salePrice ? "AED " : ""}
+                      valueStyle={{
+                        fontWeight: 800,
+                        color: "#10b981",
+                        fontSize: 18,
+                      }}
+                    />
+                  </Col>
+                  <Col span={12}>
+                    <Statistic
+                      title="Stock Quantity"
+                      value={selectedProduct.quantity}
+                      suffix=" units"
+                      valueStyle={{ fontWeight: 700, fontSize: 16 }}
+                    />
+                  </Col>
+                  <Col span={12}>
+                    <Statistic
+                      title="Warranty"
+                      value={selectedProduct.warrantyYears || 0}
+                      suffix=" Years"
+                      valueStyle={{ fontWeight: 700, fontSize: 16 }}
+                    />
+                  </Col>
+                </Row>
+              </Col>
+            </Row>
+
+            <Divider style={{ margin: "20px 0" }} />
+
+            <Row gutter={[24, 24]}>
+              <Col xs={24} md={12}>
+                <Text strong style={{ color: "#1e293b", fontSize: 14 }}>
+                  Description
+                </Text>
+                <p
+                  style={{
+                    color: "#64748b",
+                    fontSize: 13,
+                    marginTop: 6,
+                    lineHeight: 1.6,
+                  }}
+                >
+                  {selectedProduct.description || "No description provided."}
+                </p>
+
+                <div style={{ marginTop: 16 }}>
+                  <Text strong style={{ color: "#1e293b", fontSize: 14 }}>
+                    Materials
+                  </Text>
+                  <div style={{ marginTop: 6 }}>
+                    {selectedProduct.material &&
+                    selectedProduct.material.length > 0 ? (
+                      selectedProduct.material.map((m, i) => (
+                        <Tag key={i} style={{ borderRadius: 4 }}>
+                          {m}
+                        </Tag>
+                      ))
+                    ) : (
+                      <Text type="secondary" style={{ fontSize: 13 }}>
+                        —
+                      </Text>
+                    )}
+                  </div>
+                </div>
+              </Col>
+
+              <Col xs={24} md={12}>
+                <Text strong style={{ color: "#1e293b", fontSize: 14 }}>
+                  Product Specifications
+                </Text>
+                <div style={{ marginTop: 8 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      padding: "4px 0",
+                      borderBottom: "1px dashed #f1f5f9",
+                    }}
+                  >
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      Finish
+                    </Text>
+                    <Text strong style={{ fontSize: 12 }}>
+                      {selectedProduct.finish || "—"}
+                    </Text>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      padding: "4px 0",
+                      borderBottom: "1px dashed #f1f5f9",
+                    }}
+                  >
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      Origin Country
+                    </Text>
+                    <Text strong style={{ fontSize: 12 }}>
+                      {selectedProduct.originCountry || "—"}
+                    </Text>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      padding: "4px 0",
+                      borderBottom: "1px dashed #f1f5f9",
+                    }}
+                  >
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      Return Policy
+                    </Text>
+                    <Text strong style={{ fontSize: 12 }}>
+                      {selectedProduct.returnPolicyDays
+                        ? `${selectedProduct.returnPolicyDays} Days`
+                        : "—"}
+                    </Text>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      padding: "4px 0",
+                      borderBottom: "1px dashed #f1f5f9",
+                    }}
+                  >
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      No-Cost EMI
+                    </Text>
+                    <Text strong style={{ fontSize: 12 }}>
+                      {selectedProduct.noCostEmiAvailable ? "Yes" : "No"}
+                    </Text>
+                  </div>
+                </div>
+              </Col>
+            </Row>
+          </div>
+        )}
       </Modal>
 
     </div>

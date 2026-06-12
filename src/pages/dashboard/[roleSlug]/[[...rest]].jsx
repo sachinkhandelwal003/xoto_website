@@ -8,7 +8,7 @@ import DashboardLoader from '@/components/CMS/components/layout/DashboardLoader'
 
 const CmsApp = dynamic(() => import('@/components/CMS/CmsApp'), {
   ssr: false,
-  loading: () => <DashboardLoader />
+  loading: () => null
 });
 
 const roleSlugMap = {
@@ -53,7 +53,7 @@ export default function DashboardPage() {
   }, [user, token, rehydrated, router.query.roleSlug]);
 
   if (!rehydrated) {
-    return <DashboardLoader />;
+    return null;
   }
 
   if (!user || !token) return null;

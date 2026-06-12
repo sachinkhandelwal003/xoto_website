@@ -1,16 +1,52 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; 
+import { useRouter } from "next/router"; 
 import { apiService } from "../../manageApi/utils/custom.apiservice";
 import { useBlogContext } from "../../context/BlogContext";
-import { FaFacebookF, FaTwitter, FaLinkedinIn, FaInstagram } from "react-icons/fa";
-import { FaXTwitter } from "react-icons/fa6"
+import { FaFacebookF, FaTwitter, FaLinkedinIn, FaInstagram, FaWhatsapp, FaLink } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
+import { toast } from "react-toastify";
 
-const Ai3 = () => {
-  const navigate = useNavigate();
+const Ai3 = ({ blog: propBlog }) => {
+  const router = useRouter();
   const { selectedBlogId, setSelectedBlogId } = useBlogContext(); 
-  const [blog, setBlog] = useState(null);
+  const [blog, setBlog] = useState(propBlog || null);
   const [recentBlogs, setRecentBlogs] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!propBlog);
+  const [shareUrl, setShareUrl] = useState("");
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [submittingNewsletter, setSubmittingNewsletter] = useState(false);
+
+  const handleSubscribeNewsletter = async () => {
+    if (!newsletterEmail || !/\S+@\S+\.\S+/.test(newsletterEmail)) {
+      toast.error("Please enter a valid email address.", { position: "top-center" });
+      return;
+    }
+
+    setSubmittingNewsletter(true);
+    try {
+      const res = await apiService.post("newsletter/subscribe", {
+        email: newsletterEmail,
+      });
+
+      if (res?.success) {
+        toast.success(res.message || "Subscribed successfully!", { position: "top-center" });
+        setNewsletterEmail("");
+      } else {
+        toast.error(res?.message || "Failed to subscribe.", { position: "top-center" });
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(err?.response?.data?.message || "Failed to subscribe. Please try again.", { position: "top-center" });
+    } finally {
+      setSubmittingNewsletter(false);
+    }
+  };
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setShareUrl(window.location.href);
+    }
+  }, []);
 
   // 🚨 CRITICAL FIX: CSS to override Tailwind's list resets on the frontend
   const BLOG_HTML_STYLES = `
@@ -71,9 +107,38 @@ const Ai3 = () => {
   `;
 
   useEffect(() => {
-    // 🔹 LocalStorage trick
-    let activeId = selectedBlogId;
+    // 1. Fetch recent blogs
+    apiService
+      .get("blogs/get-all-blogs", { 
+        isPublished: true, 
+        page: 1, 
+        limit: 8, 
+        search: "" 
+      }) 
+      .then((res) => {
+        let allBlogs = [];
+        if (Array.isArray(res)) allBlogs = res;
+        else if (res?.data && Array.isArray(res.data)) allBlogs = res.data;
+        else if (res?.data?.data && Array.isArray(res.data.data)) allBlogs = res.data.data;
+        else if (res?.blogs && Array.isArray(res.blogs)) allBlogs = res.blogs;
+        else if (res?.data?.blogs && Array.isArray(res.data.blogs)) allBlogs = res.data.blogs;
 
+        const currentId = propBlog ? propBlog._id || propBlog.id : selectedBlogId || localStorage.getItem("savedBlogId");
+        const filteredBlogs = allBlogs.filter(
+          (b) => String(b._id || b.id) !== String(currentId)
+        );
+          
+        setRecentBlogs(filteredBlogs.slice(0, 3));
+      })
+      .catch((err) => console.error("Error fetching recent blogs:", err));
+
+    if (propBlog) {
+      setBlog(propBlog);
+      setLoading(false);
+      return;
+    }
+
+    let activeId = selectedBlogId;
     if (activeId) {
       localStorage.setItem("savedBlogId", activeId);
     } else {
@@ -87,7 +152,6 @@ const Ai3 = () => {
 
     setLoading(true);
 
-    // 1. Current Blog Fetch
     apiService
       .get("blogs/get-blog-by-id", { id: activeId }) 
       .then((res) => {
@@ -98,33 +162,7 @@ const Ai3 = () => {
       })
       .finally(() => setLoading(false));
       
-    // 2. All Blogs Fetch (For Sidebar - EXACT API PARAMS ADDED)
-    apiService
-      .get("blogs/get-all-blogs", { 
-        isPublished: true, 
-        page: 1, 
-        limit: 8, 
-        search: "" 
-      }) 
-      .then((res) => {
-        // Flexible data extraction
-        let allBlogs = [];
-        if (Array.isArray(res)) allBlogs = res;
-        else if (res?.data && Array.isArray(res.data)) allBlogs = res.data;
-        else if (res?.data?.data && Array.isArray(res.data.data)) allBlogs = res.data.data;
-        else if (res?.blogs && Array.isArray(res.blogs)) allBlogs = res.blogs;
-        else if (res?.data?.blogs && Array.isArray(res.data.blogs)) allBlogs = res.data.blogs;
-
-        // Backend is already sending only published ones, so we just remove the currently open blog
-        const filteredBlogs = allBlogs.filter(
-          (b) => String(b._id || b.id) !== String(activeId)
-        );
-          
-        setRecentBlogs(filteredBlogs.slice(0, 3)); // Taking top 3 for sidebar
-      })
-      .catch((err) => console.error("Error fetching recent blogs:", err));
-      
-  }, [selectedBlogId]);
+  }, [selectedBlogId, propBlog]);
 
   if (loading) {
     return <div className="text-center py-10 text-xl font-medium">Loading Content...</div>;
@@ -184,110 +222,119 @@ const Ai3 = () => {
 
         {/* RIGHT: SIDEBAR */}
         <aside className="space-y-8">
-          
         {/* SHARE CARD */}
-<div className="bg-white shadow-lg rounded-xl p-6 relative z-10">
-  <h3 className="text-xl font-bold mb-4">Share</h3>
-  <div className="flex flex-col gap-3">
-    
-    {/* Facebook Link */}
-    <a 
-      href="https://www.facebook.com/xotouae" 
-      target="_blank" 
-      rel="noopener noreferrer"
-      className="flex items-center justify-center gap-2 bg-[#526FA3] text-white p-3 rounded-md hover:opacity-90 transition"
-    >
-      <FaFacebookF /> Facebook
-    </a>
-
-    {/* X (Twitter) Link */}
-   <a 
-  href="https://www.instagram.com/xotoproptech/" 
-  target="_blank" 
-  rel="noopener noreferrer"
-  className="flex items-center justify-center gap-2 text-white p-3 rounded-md transition hover:opacity-90"
-  style={{
-    background: "linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)"
-  }}
->
-  <FaInstagram /> Instagram
-</a>
-
-    {/* LinkedIn Link */}
-    <a 
-      href="https://www.linkedin.com/company/xotouae/?viewAsMember=true" 
-      target="_blank" 
-      rel="noopener noreferrer"
-      className="flex items-center justify-center gap-2 bg-[#3C86AD] text-white p-3 rounded-md hover:opacity-90 transition"
-    >
-      <FaLinkedinIn /> Linkedin
-    </a>
-
-  </div>
-</div>
-
-          {/* NEWSLETTER CARD */}
-          <div className="bg-white shadow-lg rounded-xl p-6 relative z-10">
-            <h3 className="text-xl font-bold mb-4">Join our Newsletter</h3>
-            <input
-              type="email"
-              placeholder="Email address"
-              className="w-full border p-2 rounded mb-3 outline-none focus:border-[#5C039B]"
-            />
-            <button className="w-full bg-[#5C039B] text-white py-2 rounded font-bold hover:opacity-90 transition">
-              Subscribe
-            </button>
-          </div>
-
-         {/* RECENT BLOGS CARD */}
-          <div className="bg-white shadow-lg rounded-xl p-6 relative z-10">
-            <h3 className="text-xl font-bold mb-4">Recent Blogs</h3>
-            <div className="flex flex-col gap-4">
-              
-              {recentBlogs.length > 0 ? (
-                recentBlogs.map((item) => (
-                  <div 
-                    key={item._id || item.id} 
-                    className="flex items-center gap-3 cursor-pointer group"
-                    onClick={() => {
-                      if (setSelectedBlogId) {
-                        const clickedId = item._id || item.id;
-                        setSelectedBlogId(clickedId);
-                        localStorage.setItem("savedBlogId", clickedId);
-                        window.scrollTo({ top: 0, behavior: "smooth" }); 
-                      }
-                    }}
-                  >
-                    <div className="w-16 h-16 bg-gray-200 rounded-md overflow-hidden flex-shrink-0">
-                      <img 
-                        src={item.featuredImage || "https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"} 
-                        alt={item.title || "Blog Image"} 
-                        className="w-full h-full object-cover group-hover:scale-110 transition duration-300" 
-                      />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-sm text-gray-800 line-clamp-2 group-hover:text-[#5C039B] transition">
-                        {item.title || "Untitled Blog"}
-                      </h4>
-                      <p className="text-xs text-gray-400 mt-1">
-                        {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "Recent"}
-                      </p>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-gray-500">No published blogs found.</p>
-              )}
-
-            </div>
+        <div className="bg-white shadow-lg rounded-xl p-6 relative z-10">
+          <h3 className="text-xl font-bold mb-4">Share</h3>
+          <div className="flex flex-col gap-3">
             
-            <button 
-              onClick={() => navigate('/Blogs')} 
-              className="w-full mt-5 text-[#5C039B] font-semibold text-sm hover:underline"
+            {/* Facebook Link */}
+            <a 
+              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 bg-[#526FA3] text-white p-3 rounded-md hover:opacity-90 transition font-bold"
             >
-              View All Blogs →
-            </button>
+              <FaFacebookF /> Facebook
+            </a>
+
+            {/* X (Twitter) Link */}
+            <a 
+              href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(blog?.title || '')}`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 bg-black text-white p-3 rounded-md hover:opacity-90 transition font-bold"
+            >
+              <FaXTwitter /> Twitter / X
+            </a>
+
+            {/* LinkedIn Link */}
+            <a 
+              href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 bg-[#3C86AD] text-white p-3 rounded-md hover:opacity-90 transition font-bold"
+            >
+              <FaLinkedinIn /> Linkedin
+            </a>
+
+            {/* WhatsApp Link */}
+            <a 
+              href={`https://api.whatsapp.com/send?text=${encodeURIComponent(blog?.title || '')}%20${encodeURIComponent(shareUrl)}`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 bg-[#25D366] text-white p-3 rounded-md hover:opacity-90 transition font-bold"
+            >
+              <FaWhatsapp /> WhatsApp
+            </a>
+
           </div>
+        </div>
+
+        {/* NEWSLETTER CARD */}
+        <div className="bg-white shadow-lg rounded-xl p-6 relative z-10">
+          <h3 className="text-xl font-bold mb-4">Join our Newsletter</h3>
+          <input
+            type="email"
+            placeholder="Email address"
+            value={newsletterEmail}
+            onChange={(e) => setNewsletterEmail(e.target.value)}
+            disabled={submittingNewsletter}
+            className="w-full border p-2 rounded mb-3 outline-none focus:border-[#5C039B] text-black"
+          />
+          <button 
+            onClick={handleSubscribeNewsletter}
+            disabled={submittingNewsletter}
+            className="w-full bg-[#5C039B] text-white py-2 rounded font-bold hover:opacity-90 transition disabled:opacity-50"
+          >
+            {submittingNewsletter ? "Subscribing..." : "Subscribe"}
+          </button>
+        </div>
+
+        {/* RECENT BLOGS CARD */}
+        <div className="bg-white shadow-lg rounded-xl p-6 relative z-10">
+          <h3 className="text-xl font-bold mb-4">Recent Blogs</h3>
+          <div className="flex flex-col gap-4">
+            
+            {recentBlogs.length > 0 ? (
+              recentBlogs.map((item) => (
+                <div 
+                  key={item._id || item.id} 
+                  className="flex items-center gap-3 cursor-pointer group"
+                  onClick={() => {
+                    router.push(`/blog/${item.slug}`);
+                    window.scrollTo({ top: 0, behavior: "smooth" }); 
+                  }}
+                >
+                  <div className="w-16 h-16 bg-gray-200 rounded-md overflow-hidden flex-shrink-0">
+                    <img 
+                      src={item.featuredImage || "https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"} 
+                      alt={item.title || "Blog Image"} 
+                      className="w-full h-full object-cover group-hover:scale-110 transition duration-300" 
+                    />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-sm text-gray-800 line-clamp-2 group-hover:text-[#5C039B] transition">
+                      {item.title || "Untitled Blog"}
+                    </h4>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "Recent"}
+                    </p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-gray-500">No published blogs found.</p>
+            )}
+
+          </div>
+          
+          <button 
+            onClick={() => router.push('/Blogs')} 
+            className="w-full mt-5 text-[#5C039B] font-semibold text-sm hover:underline"
+          >
+            View All Blogs →
+          </button>
+        </div>
 
         </aside>
 

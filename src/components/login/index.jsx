@@ -257,46 +257,46 @@ useEffect(() => {
       const developerId = user?._id || user?.id;
       localStorage.setItem("developerId", developerId);
       toast.success("Welcome Developer! Accessing your dashboard...");
-      setTimeout(() => { window.location.href = "/dashboard/developer"; }, 1500);
+      setTimeout(() => { window.location.href = "/dashboard/developer"; }, 100);
       return;
     }
 
     if (partnerType === "agent") {
       toast.success("Welcome Agent! Accessing your dashboard...");
-      setTimeout(() => { window.location.href = "/dashboard/agent"; }, 1500);
+      setTimeout(() => { window.location.href = "/dashboard/agent"; }, 100);
       return;
     }
 
     if (partnerType === "agency") {
       toast.success("Welcome Agency! Accessing your dashboard...");
-      setTimeout(() => { window.location.href = "/dashboard/agency"; }, 1500);
+      setTimeout(() => { window.location.href = "/dashboard/agency"; }, 100);
       return;
     }
 
     if (partnerType === "vaultpartner") {
       toast.success("Welcome to Xoto Vault!");
-      setTimeout(() => { window.location.href = "/dashboard/vaultpartner"; }, 1500);
+      setTimeout(() => { window.location.href = "/dashboard/vaultpartner"; }, 100);
       return;
     }
 
     if (partnerType === "vaultagent") {
       toast.success("Welcome to Xoto Vault!");
-      setTimeout(() => { window.location.href = "/dashboard/vaultagent"; }, 1500);
+      setTimeout(() => { window.location.href = "/dashboard/vaultagent"; }, 100);
       return;
     }
 
     // ✅ Also check user.type from JWT as extra fallback
     const userType = user?.type?.toLowerCase();
     if (userType === 'agent') {
-      setTimeout(() => { window.location.href = "/dashboard/agent"; }, 1500);
+      setTimeout(() => { window.location.href = "/dashboard/agent"; }, 100);
       return;
     }
     if (userType === 'agency') {
-      setTimeout(() => { window.location.href = "/dashboard/agency"; }, 1500);
+      setTimeout(() => { window.location.href = "/dashboard/agency"; }, 100);
       return;
     }
     if (userType === 'developer') {
-      setTimeout(() => { window.location.href = "/dashboard/developer"; }, 1500);
+      setTimeout(() => { window.location.href = "/dashboard/developer"; }, 100);
       return;
     }
 
@@ -318,18 +318,18 @@ useEffect(() => {
     const path = rolePathMap[roleCode];
     if (rolePathMap[roleCode]) {
       toast.success("Welcome back! Redirecting...");
-      setTimeout(() => { window.location.href = path; }, 1500);
+      setTimeout(() => { window.location.href = path; }, 100);
       return;
     } 
     if (partnerType === "gridadvisor") {
       toast.success("Welcome Grid Advisor!");
-      setTimeout(() => { window.location.href = "/dashboard/GridAdvisor"; }, 1500);
+      setTimeout(() => { window.location.href = "/dashboard/GridAdvisor"; }, 100);
       return;
     }
 
     if (partnerType === "gridreferralpartner") {
       toast.success("Welcome Referral Partner!");
-      setTimeout(() => { window.location.href = "/dashboard/gridreferralpartner"; }, 1500);
+      setTimeout(() => { window.location.href = "/dashboard/gridreferralpartner"; }, 100);
       return;
     }
 

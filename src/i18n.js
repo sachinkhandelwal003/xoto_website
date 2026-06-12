@@ -56,6 +56,8 @@ import arMort3 from "./locales/Ar/mort3.json";
 import arMort4 from "./locales/Ar/mort4.json"; // <-- NEW
 import arMort6 from "./locales/Ar/mort6.json";
 import arMort7 from "./locales/Ar/mort7.json";
+import arMortCalc from "./locales/Ar/mortcalc.json";
+import arHeroProperties from "./locales/Ar/heroproperties.json";
 import arEcommerce from "./locales/Ar/ecommerce.json";
 
 /* =========================
@@ -103,6 +105,8 @@ import enMort3 from "./locales/en/mort3.json";
 import enMort4 from "./locales/en/mort4.json"; // <-- NEW
 import enMort6 from "./locales/en/mort6.json";
 import enMort7 from "./locales/en/mort7.json";
+import enMortCalc from "./locales/en/mortcalc.json";
+import enHeroProperties from "./locales/en/heroproperties.json";
 import enbook from "./locales/en/book.json";
 import enlandhero from "./locales/en/landhero.json";
 import enconsultation from "./locales/en/consultation.json";
@@ -159,6 +163,8 @@ import hiMort3 from "./locales/hi/mort3.json";
 import hiMort4 from "./locales/hi/mort4.json"; // <-- NEW
 import hiMort6 from "./locales/hi/mort6.json";
 import hiMort7 from "./locales/hi/mort7.json";
+import hiMortCalc from "./locales/hi/mortcalc.json";
+import hiHeroProperties from "./locales/hi/heroproperties.json";
 import hibook from "./locales/hi/book.json";
 import hiconsultation from "./locales/hi/consultation.json";
 import hiarticle1 from "./locales/hi/article1.json";
@@ -215,6 +221,8 @@ import deMort3 from "./locales/de/mort3.json";
 import deMort4 from "./locales/de/mort4.json"; // <-- NEW
 import deMort6 from "./locales/de/mort6.json";
 import deMort7 from "./locales/de/mort7.json";
+import deMortCalc from "./locales/de/mortcalc.json";
+import deHeroProperties from "./locales/de/heroproperties.json";
 import debook from "./locales/de/book.json";
 import deconsultation from "./locales/de/consultation.json";
 import dearticle1 from "./locales/de/article1.json";
@@ -271,6 +279,8 @@ import esMort3 from "./locales/es/mort3.json";
 import esMort4 from "./locales/es/mort4.json"; // <-- NEW
 import esMort6 from "./locales/es/mort6.json";
 import esMort7 from "./locales/es/mort7.json";
+import esMortCalc from "./locales/es/mortcalc.json";
+import esHeroProperties from "./locales/es/heroproperties.json";
 import esbook from "./locales/es/book.json";
 import esconsultation from "./locales/es/consultation.json";
 import esarticle1 from "./locales/es/article1.json";
@@ -327,6 +337,8 @@ import frMort3 from "./locales/fr/mort3.json";
 import frMort4 from "./locales/fr/mort4.json"; // <-- NEW
 import frMort6 from "./locales/fr/mort6.json";
 import frMort7 from "./locales/fr/mort7.json";
+import frMortCalc from "./locales/fr/mortcalc.json";
+import frHeroProperties from "./locales/fr/heroproperties.json";
 import frbook from "./locales/fr/book.json";
 import frconsultation from "./locales/fr/consultation.json";
 import frarticle1 from "./locales/fr/article1.json";
@@ -383,6 +395,8 @@ import ruMort3 from "./locales/ru/mort3.json";
 import ruMort4 from "./locales/ru/mort4.json"; // <-- NEW
 import ruMort6 from "./locales/ru/mort6.json";
 import ruMort7 from "./locales/ru/mort7.json";
+import ruMortCalc from "./locales/ru/mortcalc.json";
+import ruHeroProperties from "./locales/ru/heroproperties.json";
 import rubook from "./locales/ru/book.json";
 import ruconsultation from "./locales/ru/consultation.json";
 import ruarticle1 from "./locales/ru/article1.json";
@@ -439,6 +453,8 @@ import trMort3 from "./locales/tr/mort3.json";
 import trMort4 from "./locales/tr/mort4.json"; // <-- NEW
 import trMort6 from "./locales/tr/mort6.json";
 import trMort7 from "./locales/tr/mort7.json";
+import trMortCalc from "./locales/tr/mortcalc.json";
+import trHeroProperties from "./locales/tr/heroproperties.json";
 import trbook from "./locales/tr/book.json";
 import trconsultation from "./locales/tr/consultation.json";
 import trarticle1 from "./locales/tr/article1.json";
@@ -495,6 +511,8 @@ import zhMort3 from "./locales/zh/mort3.json";
 import zhMort4 from "./locales/zh/mort4.json"; // <-- NEW
 import zhMort6 from "./locales/zh/mort6.json";
 import zhMort7 from "./locales/zh/mort7.json";
+import zhMortCalc from "./locales/zh/mortcalc.json";
+import zhHeroProperties from "./locales/zh/heroproperties.json";
 import zhbook from "./locales/zh/book.json";
 import zhconsultation from "./locales/zh/consultation.json";
 import zharticle1 from "./locales/zh/article1.json";
@@ -551,6 +569,8 @@ import tlMort3 from "./locales/tl/mort3.json";
 import tlMort4 from "./locales/tl/mort4.json"; // <-- NEW
 import tlMort6 from "./locales/tl/mort6.json";
 import tlMort7 from "./locales/tl/mort7.json";
+import tlMortCalc from "./locales/tl/mortcalc.json";
+import tlHeroProperties from "./locales/tl/heroproperties.json";
 import tlbook from "./locales/tl/book.json";
 import tlconsultation from "./locales/tl/consultation.json";
 import tlarticle1 from "./locales/tl/article1.json";
@@ -616,6 +636,8 @@ import faMort3 from "./locales/fa/mort3.json";
 import faMort4 from "./locales/fa/mort4.json"; // <-- NEW
 import faMort6 from "./locales/fa/mort6.json";
 import faMort7 from "./locales/fa/mort7.json";
+import faMortCalc from "./locales/fa/mortcalc.json";
+import faHeroProperties from "./locales/fa/heroproperties.json";
 import faEcommerce from "./locales/fa/ecommerce.json";
 
 /* =========================
@@ -672,6 +694,8 @@ import urMort3 from "./locales/ur/mort3.json";
 import urMort4 from "./locales/ur/mort4.json"; // <-- NEW
 import urMort6 from "./locales/ur/mort6.json";
 import urMort7 from "./locales/ur/mort7.json";
+import urMortCalc from "./locales/ur/mortcalc.json";
+import urHeroProperties from "./locales/ur/heroproperties.json";
 import urEcommerce from "./locales/ur/ecommerce.json";
 
 /* =========================
@@ -727,6 +751,8 @@ import paMort3 from "./locales/pa/mort3.json";
 import paMort4 from "./locales/pa/mort4.json"; // <-- NEW
 import paMort6 from "./locales/pa/mort6.json";
 import paMort7 from "./locales/pa/mort7.json";
+import paMortCalc from "./locales/pa/mortcalc.json";
+import paHeroProperties from "./locales/pa/heroproperties.json";
 import paEcommerce from "./locales/pa/ecommerce.json";
 
 
@@ -734,9 +760,9 @@ import paEcommerce from "./locales/pa/ecommerce.json";
 // Initialization
 // ==========================================
 i18n
-  .use(LanguageDetector)
   .use(initReactI18next)
   .init({
+    lng: "en",
     resources: {
       en: {
         common: enCommon,
@@ -781,6 +807,8 @@ i18n
         mort4: enMort4, // <-- ADDED
         mort6: enMort6,
         mort7: enMort7,
+        mortcalc: enMortCalc,
+        heroproperties: enHeroProperties,
         book: enbook,
         consultation: enconsultation,
         landhero: enlandhero,
@@ -845,6 +873,8 @@ i18n
         mort4: arMort4, // <-- ADDED
         mort6: arMort6,
         mort7: arMort7,
+        mortcalc: arMortCalc,
+        heroproperties: arHeroProperties,
         ecommerce: arEcommerce,
       },
 
@@ -891,6 +921,8 @@ i18n
         mort4: hiMort4, // <-- ADDED
         mort6: hiMort6,
         mort7: hiMort7,
+        mortcalc: hiMortCalc,
+        heroproperties: hiHeroProperties,
         book: hibook,
         consultation: hiconsultation,
         landhero: hilandhero,
@@ -946,6 +978,8 @@ i18n
         mort4: deMort4, // <-- ADDED
         mort6: deMort6,
         mort7: deMort7,
+        mortcalc: deMortCalc,
+        heroproperties: deHeroProperties,
         book: debook,
         consultation: deconsultation,
         landhero: delandhero,
@@ -1001,6 +1035,8 @@ i18n
         mort4: esMort4, // <-- ADDED
         mort6: esMort6,
         mort7: esMort7,
+        mortcalc: esMortCalc,
+        heroproperties: esHeroProperties,
         book: esbook,
         consultation: esconsultation,
         landhero: eslandhero,
@@ -1056,6 +1092,8 @@ i18n
         mort4: frMort4, // <-- ADDED
         mort6: frMort6,
         mort7: frMort7,
+        mortcalc: frMortCalc,
+        heroproperties: frHeroProperties,
         book: frbook,
         consultation: frconsultation,
         landhero: frlandhero,
@@ -1111,6 +1149,7 @@ i18n
         mort4: ruMort4, // <-- ADDED
         mort6: ruMort6,
         mort7: ruMort7,
+        mortcalc: ruMortCalc,
         book: rubook,
         consultation: ruconsultation,
         landhero: rulandhero,
@@ -1166,6 +1205,7 @@ i18n
         mort4: trMort4, // <-- ADDED
         mort6: trMort6,
         mort7: trMort7,
+        mortcalc: trMortCalc,
         book: trbook,
         consultation: trconsultation,
         landhero: trlandhero,
@@ -1221,6 +1261,7 @@ i18n
         mort4: zhMort4, // <-- ADDED
         mort6: zhMort6,
         mort7: zhMort7,
+        mortcalc: zhMortCalc,
         book: zhbook,
         consultation: zhconsultation,
         landhero: zhlandhero,
@@ -1276,6 +1317,7 @@ i18n
         mort4: tlMort4, // <-- ADDED
         mort6: tlMort6,
         mort7: tlMort7,
+        mortcalc: tlMortCalc,
         book: tlbook,
         consultation: tlconsultation,
         landhero: tllandhero,
@@ -1338,6 +1380,7 @@ i18n
         mort4: faMort4, // <-- ADDED
         mort6: faMort6,
         mort7: faMort7,
+        mortcalc: faMortCalc,
         ecommerce: faEcommerce,
       },
 
@@ -1393,6 +1436,7 @@ i18n
         mort4: urMort4, // <-- ADDED
         mort6: urMort6,
         mort7: urMort7,
+        mortcalc: urMortCalc,
         ecommerce: urEcommerce,
       },
 
@@ -1447,6 +1491,7 @@ i18n
         mort4: paMort4, // <-- ADDED
         mort6: paMort6,
         mort7: paMort7,
+        mortcalc: paMortCalc,
         ecommerce: paEcommerce,
       },
     },
@@ -1495,9 +1540,10 @@ i18n
       "mort1",
       "mort2",
       "mort3",
-      "mort4", // <-- ADDED mort4 HERE
+      "mort4",
       "mort6",
-      "mort7", // <-- FIXED mort7 WAS MISSING HERE PREVIOUSLY
+      "mort7",
+      "mortcalc",
       "book",
       "consultation",
       "article1",

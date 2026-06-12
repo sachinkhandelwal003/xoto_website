@@ -13,7 +13,7 @@ const DashboardLoader = () => {
         <img
           src={logoNew?.src || logoNew}
           alt="Xoto logo"
-          className={styles.dashboardLogoSpinner}
+          className={styles.dashboardLogoSpinner} 
         />
       </div>
 
