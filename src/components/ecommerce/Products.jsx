@@ -69,7 +69,7 @@ const handleShare = async () => {
       {/* TAGS */}
       <div className="absolute top-3 left-3 z-10 flex flex-col gap-1">
         {product.isFeatured && (
-          <span className="bg-purple-600 text-white px-2 py-0.5 text-xs font-bold rounded">
+          <span className="bg-[#5c039b] text-white px-2 py-0.5 text-xs font-bold rounded">
             FEATURED
           </span>
         )}
@@ -162,8 +162,8 @@ const handleShare = async () => {
           <motion.button
             whileHover={{ scale: 1.04 }}
             onClick={() => navigate(`/ecommerce/product/${product._id}`)}
-            className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2.5 
-                       rounded-lg flex items-center gap-1.5 text-sm font-medium
+            className="bg-[#5c039b] text-white hover:bg-[#4a0280] border border-[#5c039b]
+                       px-3 py-2.5 rounded-lg flex items-center gap-1.5 text-sm font-medium
                        transition duration-200 flex-shrink-0"
           >
             <FiEye size={14} /> View
@@ -179,16 +179,16 @@ const handleShare = async () => {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.85 }}
                 transition={{ duration: 0.2 }}
-                className="flex-1 flex items-center justify-between bg-purple-50 
-                           border border-purple-200 rounded-lg px-2 py-1.5"
+                className="flex-1 flex items-center justify-between bg-[#5c039b]/5
+                           border border-[#5c039b]/20 rounded-lg px-2 py-1.5"
               >
                 {/* Decrease / Remove */}
                 <button
                   onClick={() => cartItem.quantity === 1 ? onRemove(cartItem) : onDecrease(cartItem)}
                   disabled={updating}
-                  className="w-7 h-7 rounded-md bg-white border border-purple-200 
-                             flex items-center justify-center text-purple-600
-                             hover:bg-purple-100 transition disabled:opacity-50"
+                  className="w-7 h-7 rounded-md bg-white border border-[#5c039b]/20
+                             flex items-center justify-center text-[#5c039b]
+                             hover:bg-[#5c039b]/10 transition disabled:opacity-50"
                 >
                   {cartItem.quantity === 1
                     ? <FiTrash2 size={12} className="text-red-400" />
@@ -197,7 +197,7 @@ const handleShare = async () => {
                 </button>
 
                 {/* Count */}
-                <span className="font-bold text-purple-700 text-sm min-w-[20px] text-center">
+                <span className="font-bold text-[#5c039b] text-sm min-w-[20px] text-center">
                   {updating ? (
                     <span className="inline-block w-3 h-3 border-2 border-purple-500 
                                      border-t-transparent rounded-full animate-spin" />
@@ -208,8 +208,8 @@ const handleShare = async () => {
                 <button
                   onClick={() => onIncrease(cartItem)}
                   disabled={updating}
-                  className="w-7 h-7 rounded-md bg-purple-600 flex items-center 
-                             justify-center text-white hover:bg-purple-700 
+                  className="w-7 h-7 rounded-md bg-[#5c039b] flex items-center
+                             justify-center text-white hover:bg-[#4a0280]
                              transition disabled:opacity-50"
                 >
                   <FiPlus size={12} />
@@ -229,8 +229,8 @@ const handleShare = async () => {
                 className={`flex-1 px-3 py-2.5 rounded-lg flex items-center justify-center 
                             gap-1.5 text-sm font-medium transition duration-200
                             ${updating
-                              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                              : "bg-gray-900 hover:bg-black text-white"
+                              ? "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
+                              : "bg-white border border-[#5c039b] text-[#5c039b] hover:bg-[#5c039b] hover:text-white"
                             }`}
               >
                 {updating ? (
@@ -420,13 +420,16 @@ const Products = () => {
         <div className="relative z-10">
           <h1 className="text-4xl font-bold">
             {t("experience.title.prefix")}{" "}
-            <span className="text-purple-400">{t("experience.title.brand")}</span>{" "}
+            <span className="text-white">{t("experience.title.brand")}</span>{" "}
             {t("experience.title.suffix")}
           </h1>
+          <p className="mt-4 text-white/80 text-base max-w-lg mx-auto">
+            Discover handpicked furniture crafted for modern living. Elevate every room with style, comfort, and quality you can trust.
+          </p>
           <motion.button
             whileHover={{ scale: 1.05 }}
             onClick={() => navigate("/ecommerce/filter")}
-            className="mt-8 px-10 py-4 bg-purple-600 hover:bg-purple-700 
+            className="mt-8 px-10 py-4 bg-[#5c039b] hover:bg-[#4a0280]
                        rounded-xl font-bold transition duration-200"
           >
             Shop Now
@@ -442,7 +445,7 @@ const Products = () => {
           {/* ── Cart button with badge ── */}
           <button
             onClick={() => navigate("/ecommerce/cart")}
-            className="relative flex items-center gap-2 bg-purple-600 hover:bg-purple-700 
+            className="relative flex items-center gap-2 bg-[#5c039b] hover:bg-[#4a0280]
                        text-white px-5 py-2.5 rounded-xl font-medium transition duration-200"
           >
             <FiShoppingCart size={18} />

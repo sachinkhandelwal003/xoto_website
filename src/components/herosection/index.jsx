@@ -150,7 +150,7 @@ const HeroSection = () => {
                 {t("hero.buttons.loan")}
               </Link>
               <Link
-                to="/Property"
+                to="/properties"
                 className="whitespace-nowrap text-center border border-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-md hover:bg-[#5C039B] hover:text-white hover:border-[#5C039B] transition text-xs sm:text-sm md:text-base"
               >
                 {t("hero.buttons.explore")}

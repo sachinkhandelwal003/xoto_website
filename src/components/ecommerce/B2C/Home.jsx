@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import { FiSmartphone, FiLayers, FiMaximize2 } from "react-icons/fi";
 import heroBg from "../../../assets/img/hero-bg.jpg";
 import Category from "../Category";
 import Products from "../Products";
@@ -80,14 +81,14 @@ const Ecommerce = () => {
     <div className="flex flex-row flex-nowrap gap-3 sm:gap-4 justify-center pt-2 sm:pt-4 max-w-sm sm:max-w-none mx-auto">
       <Link
         to="/ecommerce/filter"
-        className="bg-transparent text-white border-2 border-white px-4 sm:px-8 py-2.5 sm:py-3 rounded-md shadow-lg text-sm sm:text-base flex-1 sm:flex-none whitespace-nowrap text-center hover:bg-[#5C039B] hover:text-white hover:border-[#5C039B] transition"
+        className="bg-[#5c039b] text-white border-2 border-[#5c039b] px-4 sm:px-8 py-2.5 sm:py-3 rounded-md shadow-lg text-sm sm:text-base flex-1 sm:flex-none whitespace-nowrap text-center hover:bg-[#4a0280] hover:border-[#4a0280] transition"
       >
         {t("hero.explore")}
       </Link>
 
       <Link
         to="/seller/registration"
-        className="border-2 border-white px-4 sm:px-8 py-2.5 sm:py-3 rounded-md hover:bg-[#5C039B] hover:text-white hover:border-[#5C039B] transition text-sm sm:text-base flex-1 sm:flex-none whitespace-nowrap text-center"
+        className="border-2 border-white text-white px-4 sm:px-8 py-2.5 sm:py-3 rounded-md hover:bg-[#5c039b] hover:border-[#5c039b] transition text-sm sm:text-base flex-1 sm:flex-none whitespace-nowrap text-center"
       >
         {t("hero.vendor")}
       </Link>
@@ -114,65 +115,30 @@ const Ecommerce = () => {
             </div>
 
             <div className="grid md:grid-cols-3 gap-8">
-              {/* AR Scan */}
-              <div className="bg-gradient-to-br from-[var(--color-primary)]/5 to-purple-50 rounded-xl p-6 border border-gray-200">
-                <div className="w-16 h-16 bg-gradient-to-br from-[var(--color-primary)] to-purple-600 rounded-lg flex items-center justify-center mb-6 mx-auto">
-                  <span className="text-2xl text-white">📱</span>
+              {[
+                { icon: <FiSmartphone size={28} />, titleKey: "cards.arScan.title", descKey: "cards.arScan.desc", btnKey: "cards.arScan.btn" },
+                { icon: <FiLayers size={28} />,     titleKey: "cards.virtual.title", descKey: "cards.virtual.desc", btnKey: "cards.virtual.btn" },
+                { icon: <FiMaximize2 size={28} />,  titleKey: "cards.fit.title",    descKey: "cards.fit.desc",    btnKey: "cards.fit.btn" },
+              ].map((card, i) => (
+                <div key={i} className="bg-purple-50 rounded-xl p-6 border border-purple-100 flex flex-col h-full">
+                  <div className="w-16 h-16 bg-[#5c039b] rounded-xl flex items-center justify-center mb-6 mx-auto text-white">
+                    {card.icon}
+                  </div>
+                  <h3 className="text-xl font-bold text-center mb-3">
+                    {t(card.titleKey)}
+                  </h3>
+                  <p className="text-gray-600 text-center mb-6 flex-1">
+                    {t(card.descKey)}
+                  </p>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="w-full py-3 bg-[#5c039b] hover:bg-[#4a0280] text-white font-semibold rounded-lg transition duration-200"
+                  >
+                    {t(card.btnKey)}
+                  </motion.button>
                 </div>
-                <h3 className="text-xl font-bold text-center mb-3">
-                  {t("cards.arScan.title")}
-                </h3>
-                <p className="text-gray-600 text-center mb-6">
-                  {t("cards.arScan.desc")}
-                </p>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="w-full py-3 bg-[var(--color-primary)] text-white font-semibold rounded-md"
-                >
-                  {t("cards.arScan.btn")}
-                </motion.button>
-              </div>
-
-              {/* Virtual */}
-              <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 border border-gray-200">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center mb-6 mx-auto">
-                  <span className="text-2xl text-white">🛋️</span>
-                </div>
-                <h3 className="text-xl font-bold text-center mb-3">
-                  {t("cards.virtual.title")}
-                </h3>
-                <p className="text-gray-600 text-center mb-6">
-                  {t("cards.virtual.desc")}
-                </p>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="w-full py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold rounded-md"
-                >
-                  {t("cards.virtual.btn")}
-                </motion.button>
-              </div>
-
-              {/* Fit */}
-              <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-6 border border-gray-200">
-                <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-lg flex items-center justify-center mb-6 mx-auto">
-                  <span className="text-2xl text-white">📏</span>
-                </div>
-                <h3 className="text-xl font-bold text-center mb-3">
-                  {t("cards.fit.title")}
-                </h3>
-                <p className="text-gray-600 text-center mb-6">
-                  {t("cards.fit.desc")}
-                </p>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-md"
-                >
-                  {t("cards.fit.btn")}
-                </motion.button>
-              </div>
+              ))}
             </div>
 
             {/* HOW IT WORKS */}

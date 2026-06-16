@@ -114,11 +114,11 @@ const Category = () => {
               Loading categories...
             </p>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-8 gap-6">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
             {Array(8).fill(0).map((_, i) => (
               <div
                 key={i}
-                className="w-[140px] h-[140px] bg-white rounded-2xl border border-gray-100 shadow-sm animate-pulse"
+                className="w-full aspect-square max-w-[120px] mx-auto bg-white rounded-2xl border border-gray-100 shadow-sm animate-pulse"
               />
             ))}
           </div>
@@ -139,27 +139,24 @@ const Category = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-8 gap-6">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
           {categories.map((category) => (
             <motion.button
               key={category.id}
               onClick={() => handleCategoryClick(category.name)}
-              whileHover={{ y: -5, scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="group relative"
+              whileHover={{ y: -4, scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
+              className="group"
             >
-              <div className="relative group flex flex-col items-center justify-center p-4 border border-gray-100 rounded-2xl bg-white shadow-sm hover:shadow-md transition-all duration-300 w-[140px] h-[140px] shrink-0">
-                <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br ${category.color} flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-300 shrink-0 overflow-hidden`}>
-                  <div className="text-white text-2xl w-full h-full flex items-center justify-center">
+              <div className="flex flex-col items-center justify-center p-3 border border-gray-100 rounded-2xl bg-white shadow-sm hover:shadow-lg hover:border-[#5c039b]/30 transition-all duration-300 w-full aspect-square max-w-[120px] mx-auto">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-[#5c039b] flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-300 overflow-hidden flex-shrink-0">
+                  <div className="text-white text-xl w-full h-full flex items-center justify-center p-1">
                     {category.icon}
                   </div>
                 </div>
-
-                <div className="h-10 flex items-center justify-center">
-                  <span className="text-[12px] sm:text-sm font-semibold text-gray-800 group-hover:text-[var(--color-primary)] transition-colors text-center leading-tight line-clamp-2">
-                    {category.name}
-                  </span>
-                </div>
+                <span className="text-[11px] sm:text-xs font-semibold text-gray-700 group-hover:text-[#5c039b] transition-colors text-center leading-tight line-clamp-2 w-full">
+                  {category.name}
+                </span>
               </div>
             </motion.button>
           ))}

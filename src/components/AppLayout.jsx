@@ -55,6 +55,7 @@ const hideFooterPaths = [
   '/aiPlanner/enhance',
   '/aiPlanner/sky',
   '/aiPlanner/virtual',
+  '/test',
 ];
 
 const allowedChatbotPaths = [

@@ -63,7 +63,7 @@ const BuiltForEveryone = () => {
   return (
     <section className="relative  z-10 py-8 px-4 sm:px-6 lg:px-8 bg-[var(--color-body)] overflow-hidden">
       {/* Wave */}
-      <div className="absolute bottom-[-20px] sm:bottom-[-50px] md:bottom-[-80px] lg:bottom-[-130px] xl:bottom-[-160px] left-0 w-full z-20 pointer-events-none  ">
+      <div className="absolute bottom-[-20px] sm:bottom-[-50px] md:bottom-[-80px] lg:bottom-[-130px] xl:bottom-[-160px] left-0 w-full -z-10 pointer-events-none  ">
         <Image
           src={wave1}
           alt=""
