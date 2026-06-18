@@ -1,0 +1,1 @@
+import{j as t}from"./index-GdvsrsK9.js";import i from"./MortgageCalculator-7-u_gpU5.js";function r(){return t.jsx(i,{initialTab:"affordability",singleCalculator:!0,backgroundVariant:"eligibility",heading:"Mortgage Eligibility Calculator",subtitle:"Check customer buying power with income, debts, residency, employment, and loan tenure."})}export{r as default};
