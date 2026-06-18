@@ -1,0 +1,1 @@
+const o=(e,n="—")=>{const r=Number(e);if(!e&&e!==0||r===0)return n;if(r>=1e6){const t=r/1e6;return`AED ${t%1===0?t.toFixed(0):t.toFixed(2).replace(/\.?0+$/,"")}M`}if(r>=1e3){const t=r/1e3;return`AED ${t%1===0?t.toFixed(0):t.toFixed(1).replace(/\.?0+$/,"")}K`}return`AED ${r.toLocaleString()}`};export{o as f};
