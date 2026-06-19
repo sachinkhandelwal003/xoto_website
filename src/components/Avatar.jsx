@@ -129,6 +129,7 @@ export default function Avatar({
   const targetInfluences = useRef({})
   const smoothJaw = useRef(0)
   const previousViseme = useRef('viseme_sil')
+  const lastBlendshapeLogTime = useRef(0)
 
   // Initialize model
   useEffect(() => {
@@ -328,6 +329,17 @@ export default function Avatar({
 
     currentViseme.current = currentVisemeName
 
+    // Viseme change logs
+    if (isSpeaking && currentVisemeName !== previousViseme.current) {
+      console.log(`[Lip-Sync Viseme Change] Viseme changed from "${previousViseme.current}" to "${currentVisemeName}" at system time: ${new Date().toISOString()} (Audio current time: ${audioRef?.current?.currentTime ? audioRef.current.currentTime.toFixed(3) : '0.000'}s)`);
+      previousViseme.current = currentVisemeName;
+    }
+    
+    if (!isSpeaking && previousViseme.current !== 'viseme_sil') {
+      console.log(`[Lip-Sync Stop] Visemes reset to silence at system time: ${new Date().toISOString()}`);
+      previousViseme.current = 'viseme_sil';
+    }
+
     // Reset targets
     const activeKeys = new Set([
       'jawOpen', 'mouthOpen', 'mouthClose', 'mouthFunnel', 'mouthPucker',
@@ -499,6 +511,21 @@ export default function Avatar({
         }
       })
     })
+
+    // Throttled real-time blendshapes log
+    const currentTimeSec = state.clock.elapsedTime
+    if (isSpeaking && (currentTimeSec - lastBlendshapeLogTime.current > 0.15)) { // every 150ms
+      lastBlendshapeLogTime.current = currentTimeSec
+      
+      const activeBlendshapes = {}
+      Object.entries(targetInfluences.current).forEach(([key, val]) => {
+        if (val > 0.01 && (key.startsWith('mouth') || key.startsWith('jaw') || key.startsWith('lip'))) {
+          activeBlendshapes[key] = val.toFixed(3)
+        }
+      })
+      
+      console.log(`[Lip-Sync Real-Time Blendshapes] Time: ${currentTimeSec.toFixed(2)}s | Audio time: ${audioRef?.current?.currentTime ? audioRef.current.currentTime.toFixed(3) : '0.000'}s | Viseme: "${currentVisemeName}" | Active Blendshapes:`, JSON.stringify(activeBlendshapes));
+    }
   })
 
   return (

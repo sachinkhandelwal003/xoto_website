@@ -5,7 +5,7 @@ import xobiaAvatar from "../../assets/img/girlimage.png";
 import { motion, AnimatePresence } from "framer-motion";
 import { getChatSessionId } from "../../utils/createSessionID"; 
 
-import ElevenLabsVoiceInterface from "./ElevenLabsVoiceInterface";
+import OpenAIVoiceInterface from "./OpenAIVoiceInterface";
 
 const API = "https://xoto.ae"; // Change this to your actual backend URL
 
@@ -183,7 +183,7 @@ const handleCloseChat = async () => {
             {/* ✅ 3. LOGIC SWITCH: If Voice Mode is ON, show Voice Interface, else show Text Chat */}
             {showVoiceMode ? (
                 // --- NEW VOICE INTERFACE (Fits inside the same modal) ---
-                <ElevenLabsVoiceInterface onClose={() => setShowVoiceMode(false)} />
+                <OpenAIVoiceInterface onClose={() => setShowVoiceMode(false)} />
             ) : (
                 // --- ORIGINAL TEXT CHAT UI ---
                 <>

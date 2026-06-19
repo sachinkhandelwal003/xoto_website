@@ -108,6 +108,7 @@ export default function TestAvatar() {
   const [analyser, setAnalyser] = useState(null)
   const [audioLoading, setAudioLoading] = useState(false)
   const [phonemeTiming, setPhonemeTiming] = useState(null) // ← ADDED THIS
+  const [isPanelOpen, setIsPanelOpen] = useState(false)
 
   const morphRef = useRef(null)
   const audioRef = useRef(null)
@@ -279,7 +280,7 @@ export default function TestAvatar() {
 
   // ── Browser TTS (Fallback) ──────────────────────────────────────
   const browserSpeak = (text) => {
-    console.log('Using Browser Speech Synthesis fallback...');
+    console.log(`[Browser Speak Fallback Start] Initiated fallback speak for text: "${text}" at system time: ${new Date().toISOString()}`);
     setDebugMsg('🔊 Playing audio (Browser Speech)...')
     window.speechSynthesis.cancel()
 
@@ -291,6 +292,7 @@ export default function TestAvatar() {
     utterance.lang = langSpeechMap[selectedLang] || 'en-US'
     
     utterance.onend = () => {
+      console.log(`[Browser Speak Fallback End] Speech synthesis finished at system time: ${new Date().toISOString()}`);
       setIsSpeaking(false)
       setStatus('idle')
       setAvatarText('')
@@ -298,7 +300,7 @@ export default function TestAvatar() {
     }
 
     utterance.onerror = (e) => {
-      console.error('Speech synthesis error:', e)
+      console.error(`[Browser Speak Fallback Error] at system time: ${new Date().toISOString()}:`, e)
       setIsSpeaking(false)
       setStatus('idle')
       setDebugMsg('❌ Speech synthesis failed')
@@ -323,22 +325,22 @@ export default function TestAvatar() {
     return new Blob(byteArrays, { type: mimeType })
   }
 
-  // ── Professional TTS with ElevenLabs ──────────────────────────────
-  const speakWithElevenLabs = useCallback(async (text) => {
+  // ── Professional TTS with OpenAI ──────────────────────────────────
+  const speakWithOpenAI = useCallback(async (text) => {
+    console.log(`[TTS API Call] Initiated at ${new Date().toISOString()} for text: "${text}"`);
     setDebugMsg('🎤 Generating professional TTS...')
     setStatus('speaking')
     setAvatarText(text)
-    setIsSpeaking(true)
+    // Delay setIsSpeaking(true) until onplay triggers
     setAudioLoading(true)
 
     try {
-      const response = await fetch('/api/tts', {
+      const response = await fetch('/api/openai-tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           text,
-          language: selectedLang,
-          return_timing: true
+          voice: 'nova'
         })
       })
 
@@ -346,21 +348,15 @@ export default function TestAvatar() {
         throw new Error(`TTS API error: ${response.status}`)
       }
 
-      const data = await response.json()
-      
-      // Store phoneme timing for perfect sync
-      if (data.phonemes && data.phonemes.length > 0) {
-        console.log('📊 Received phoneme timing:', data.phonemes.length, 'phonemes')
-        setPhonemeTiming(data.phonemes)
-      }
-      
-      // Decode base64 audio
-      const audioBlob = base64ToBlob(data.audio, 'audio/mpeg')
+      // Read audio data as blob
+      const audioBlob = await response.blob()
+      console.log(`[TTS Audio Loaded] Blob received at ${new Date().toISOString()} | Size: ${audioBlob.size} bytes | Type: ${audioBlob.type}`);
       const url = URL.createObjectURL(audioBlob)
 
       initAudioGraph()
       
       if (audioContextRef.current?.state === 'suspended') {
+        console.log('[Web Audio] Resuming audio context...');
         await audioContextRef.current.resume()
       }
 
@@ -368,11 +364,14 @@ export default function TestAvatar() {
       audioRef.current.src = url
 
       audioRef.current.onplay = () => {
-        setDebugMsg('🔊 Speaking with perfect sync...')
+        console.log(`[Audio Playback Start] Audio starts playing at system time: ${new Date().toISOString()} (Audio current time: ${audioRef.current.currentTime}s)`);
+        setDebugMsg('🔊 Speaking...')
         setAudioLoading(false)
+        setIsSpeaking(true) // Start lip sync when audio starts playing
       }
 
       audioRef.current.onended = () => {
+        console.log(`[Audio Playback End] Audio ended at system time: ${new Date().toISOString()} (Audio current time: ${audioRef.current.currentTime}s)`);
         setIsSpeaking(false)
         setStatus('idle')
         setAvatarText('')
@@ -383,17 +382,18 @@ export default function TestAvatar() {
       }
 
       audioRef.current.onerror = (e) => {
-        console.error('Audio play error:', e)
+        console.error(`[Audio Playback Error] at system time: ${new Date().toISOString()}`, e)
         setDebugMsg('❌ Audio playback failed')
         setAudioLoading(false)
         setIsSpeaking(false)
         browserSpeak(text)
       }
 
+      console.log(`[Audio Playback Trigger] Triggering play() at system time: ${new Date().toISOString()}`);
       await audioRef.current.play()
 
     } catch (err) {
-      console.error('TTS Error:', err)
+      console.error(`[TTS Error] at system time: ${new Date().toISOString()}:`, err)
       setDebugMsg('❌ TTS failed, falling back...')
       setAudioLoading(false)
       setIsSpeaking(false)
@@ -424,7 +424,7 @@ export default function TestAvatar() {
       setChatLog(prev => [...prev, { role: 'assistant', text: answer }])
       setDebugMsg(`Redirecting to ${navMatch.route}...`)
       
-      speakWithElevenLabs(answer)
+      speakWithOpenAI(answer)
       
       setTimeout(() => {
         router.push(navMatch.route)
@@ -432,7 +432,7 @@ export default function TestAvatar() {
     } else {
       const answer = getAnswer(query, selectedLang)
       setChatLog(prev => [...prev, { role: 'assistant', text: answer }])
-      speakWithElevenLabs(answer)
+      speakWithOpenAI(answer)
     }
   }
 
@@ -440,11 +440,13 @@ export default function TestAvatar() {
   const startVoiceListening = useCallback(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
     if (!SpeechRecognition) {
+      console.log(`[Mic Recognition] Speech recognition not supported in this browser.`);
       setDebugMsg('❌ Speech recognition not supported in this browser.')
       alert('Your browser does not support Web Speech Recognition. Please try using Chrome or Safari.')
       return
     }
 
+    console.log(`[Mic Recognition Action] Stopping any playing audio and starting mic...`);
     if (audioRef.current) audioRef.current.pause()
     window.speechSynthesis.cancel()
     setIsSpeaking(false)
@@ -454,23 +456,25 @@ export default function TestAvatar() {
     rec.interimResults = false
 
     rec.onstart = () => {
+      console.log(`[Mic Recognition Start] Microphone listening started at: ${new Date().toISOString()} (Language: ${rec.lang})`);
       setStatus('listening')
       setDebugMsg(`🎤 Listening (${rec.lang})...`)
     }
 
     rec.onresult = async (e) => {
       const said = e.results[0][0].transcript
-      console.log('User said:', said)
+      console.log(`[Mic Recognition Result] User said: "${said}" at system time: ${new Date().toISOString()}`);
       await handleSendText(said)
     }
 
     rec.onerror = (e) => {
-      console.error('Mic recognition error:', e)
+      console.error(`[Mic Recognition Error] at system time: ${new Date().toISOString()}:`, e)
       setDebugMsg(`❌ Mic error: ${e.error}`)
       setStatus('idle')
     }
 
     rec.onend = () => {
+      console.log(`[Mic Recognition End] Microphone listening stopped at: ${new Date().toISOString()}`);
       if (status === 'listening') {
         setStatus('idle')
       }
@@ -479,11 +483,19 @@ export default function TestAvatar() {
     try {
       rec.start()
     } catch (err) {
-      console.error('Failed to start speech recognition:', err)
+      console.error(`[Mic Recognition Start Error] at system time: ${new Date().toISOString()}:`, err)
     }
   }, [status, selectedLang, handleSendText])
 
+  const handleVoiceChatStart = () => {
+    setIsPanelOpen(true)
+    setTimeout(() => {
+      startVoiceListening()
+    }, 200)
+  }
+
   const stopSpeaking = () => {
+    console.log(`[Speak Action] Stopped speaking manually at system time: ${new Date().toISOString()}`);
     if (audioRef.current) audioRef.current.pause()
     window.speechSynthesis.cancel()
     setIsSpeaking(false)
@@ -541,8 +553,8 @@ export default function TestAvatar() {
   }, [isSpeaking])
 
   return (
-    <div style={styles.container}>
-      <div style={styles.canvasContainer}>
+    <div className="test-avatar-container">
+      <div className="test-avatar-canvas-container">
         <SceneErrorBoundary>
           <Canvas camera={{ position: [0, 1.45, 1.05], fov: 38 }}>
             <ambientLight intensity={0.8} />
@@ -579,8 +591,8 @@ export default function TestAvatar() {
         </div>
       </div>
 
-      <div style={styles.panel}>
-        <div style={styles.header}>
+      <div className="test-avatar-panel">
+        <div className="test-avatar-panel-header">
           <span style={styles.assistantTitle}>XOTO AI CONSULTANT</span>
           <div style={styles.statusBar}>
             <div style={{
@@ -591,7 +603,7 @@ export default function TestAvatar() {
           </div>
         </div>
 
-        <div style={styles.settingsRow}>
+        <div className="test-avatar-panel-settings">
           <label style={styles.settingLabel}>Language:</label>
           <select 
             value={selectedLang} 
@@ -675,6 +687,93 @@ export default function TestAvatar() {
           )}
         </div>
       </div>
+
+      <style>{`
+        .test-avatar-container {
+          display: flex;
+          flex-direction: row;
+          height: calc(100vh - 80px);
+          width: 100%;
+          font-family: var(--font-sans), sans-serif;
+          color: #ffffff;
+          background-color: #090514;
+          background: radial-gradient(circle at center, #1b0a30 0%, #090514 100%);
+          overflow: hidden;
+          position: relative;
+        }
+
+        .test-avatar-canvas-container {
+          flex: 1;
+          position: relative;
+          height: 100%;
+          background: transparent;
+          z-index: 1;
+        }
+
+        .test-avatar-panel {
+          width: 400px;
+          background: rgba(18, 10, 36, 0.65);
+          backdrop-filter: blur(20px);
+          border-left: 1px solid rgba(255, 255, 255, 0.08);
+          display: flex;
+          flex-direction: column;
+          padding: 24px;
+          box-sizing: border-box;
+          z-index: 10;
+          height: 100%;
+          transition: all 0.3s ease;
+        }
+
+        .test-avatar-panel-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 20px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+          padding-bottom: 14px;
+        }
+
+        .test-avatar-panel-settings {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+          .test-avatar-canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 52%;
+            background: transparent;
+          }
+          .test-avatar-panel {
+            position: absolute;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 92%;
+            max-width: 420px;
+            height: 46%;
+            max-height: 420px;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(9, 5, 20, 0.85);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            padding: 16px;
+            border-left: none;
+          }
+          .test-avatar-panel-header {
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+          }
+          .test-avatar-panel-settings {
+            margin-bottom: 10px;
+          }
+        }
+      `}</style>
     </div>
   )
 }
@@ -684,17 +783,19 @@ const styles = {
     display: 'flex',
     flexDirection: 'row',
     height: 'calc(100vh - 80px)',
-    width: '100vw',
+    width: '100%',
     fontFamily: 'var(--font-sans), sans-serif',
     color: '#ffffff',
     backgroundColor: '#090514',
     overflow: 'hidden',
+    position: 'relative',
   },
   canvasContainer: {
-    flex: 1,
-    position: 'relative',
+    position: 'absolute',
+    inset: 0,
     height: '100%',
     background: 'radial-gradient(circle at center, #1b0a30 0%, #090514 100%)',
+    zIndex: 1,
   },
   viewportGradient: {
     position: 'absolute',
@@ -729,25 +830,26 @@ const styles = {
     animation: 'pulse 1.5s infinite',
   },
   panel: {
-    width: '400px',
-    background: 'rgba(18, 10, 36, 0.65)',
-    backdropFilter: 'blur(20px)',
-    borderLeft: '1px solid rgba(255,255,255,0.08)',
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: '90%',
+    maxWidth: '430px',
+    height: '80%',
+    maxHeight: '620px',
+    background: 'rgba(9, 5, 20, 0.78)',
+    backdropFilter: 'blur(24px)',
+    borderRadius: '24px',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
     display: 'flex',
     flexDirection: 'column',
     padding: '24px',
     boxSizing: 'border-box',
     zIndex: 10,
-    height: '100%',
+    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.75)',
   },
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '20px',
-    borderBottom: '1px solid rgba(255,255,255,0.08)',
-    paddingBottom: '14px',
-  },
+
   assistantTitle: {
     fontSize: '15px',
     fontWeight: 'bold',
@@ -774,12 +876,7 @@ const styles = {
     letterSpacing: '0.5px',
     color: '#cbd5e1',
   },
-  settingsRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '20px',
-  },
+
   settingLabel: {
     fontSize: '13px',
     color: '#94a3b8',
@@ -892,5 +989,18 @@ const styles = {
     cursor: 'pointer',
     transition: 'all 0.2s',
     letterSpacing: '0.5px',
-  }
+  },
+  closePanelBtn: {
+    background: 'rgba(255, 255, 255, 0.08)',
+    border: 'none',
+    color: '#ffffff',
+    borderRadius: '50%',
+    width: '24px',
+    height: '24px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    transition: 'background 0.2s',
+  },
 }

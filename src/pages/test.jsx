@@ -12,7 +12,7 @@ export default function TestPage() {
         <meta name="description" content="Interact with the 3D Xoto AI property consultant avatar in real-time." />
         <link rel="icon" type="image/png" href="/favicon.png" />
       </Head>
-      <div style={{ backgroundColor: '#090514', minHeight: '100vh', paddingTop: '80px' }}>
+      <div style={{ backgroundColor: '#090514', height: '100vh', paddingTop: '80px', overflow: 'hidden', boxSizing: 'border-box' }}>
         <TestAvatar />
       </div>
     </>
