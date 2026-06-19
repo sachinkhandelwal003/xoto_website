@@ -1,1 +1,0 @@
-import{j as t}from"./index-GdvsrsK9.js";import a from"./MortgageCalculator-7-u_gpU5.js";function e(){return t.jsx(a,{initialTab:"mortgage",singleCalculator:!0,backgroundVariant:"affordability",heading:"Mortgage Affordability Calculator",subtitle:"Estimate monthly installments from property value, downpayment, rate type, and loan duration."})}export{e as default};
