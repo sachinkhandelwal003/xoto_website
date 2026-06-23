@@ -16,6 +16,7 @@ import {
   CheckCircleFilled, WarningOutlined, SyncOutlined
 } from "@ant-design/icons";
 import { apiService } from "../../../../../manageApi/utils/custom.apiservice";
+import { UPLOAD_URL } from '../../../../../config/urls';
 
 const { Text, Title, Paragraph } = Typography;
 const { Step } = Steps;
@@ -162,7 +163,7 @@ const AgencyProfile = () => {
 
   try {
     const response = await apiService.post(
-      "https://xoto.ae/api/upload",
+      UPLOAD_URL,
       formData,
       {
         headers: {
@@ -274,7 +275,7 @@ message.success("Logo updated successfully");
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await apiService.post("https://xoto.ae/api/upload", formData);
+      const response = await apiService.post(UPLOAD_URL, formData);
       const resData = response?.data ?? response;
       const fileUrl = resData?.file?.url;
 
@@ -353,7 +354,7 @@ message.success("Logo updated successfully");
         const formData = new FormData();
         formData.append("file", item.file);
 
-        const response = await apiService.post("https://xoto.ae/api/upload", formData);
+        const response = await apiService.post(UPLOAD_URL, formData);
         const resData = response?.data ?? response;
         const fileUrl = resData?.file?.url;
 

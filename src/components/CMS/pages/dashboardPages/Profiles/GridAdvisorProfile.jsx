@@ -15,6 +15,7 @@ import {
   CheckCircleFilled, WarningOutlined, SyncOutlined, LockOutlined
 } from "@ant-design/icons";
 import { apiService } from "../../../../../manageApi/utils/custom.apiservice";
+import { UPLOAD_URL } from '../../../../../config/urls';
 
 const { Text, Title, Paragraph } = Typography;
 
@@ -80,11 +81,7 @@ const handleImageUploadRequest = async ({ file, onSuccess, onError }) => {
   formData.append("file", file);
   setImageUploading(true);
   try {
-    const res  = await fetch("https://xoto.ae/api/upload", {
-      method: "POST",
-      body:   formData,
-    });
-    const data = await res.json();
+    const data = await apiService.post(UPLOAD_URL, formData);
 
     const fileUrl =
       data?.file?.url       ||

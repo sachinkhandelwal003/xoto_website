@@ -56,6 +56,7 @@ import {
   SearchOutlined
 } from '@ant-design/icons';
 import { showSuccessAlert, showErrorAlert } from '../../../../../manageApi/utils/sweetAlert';
+import { SITE_API_URL } from '../../../../../config/urls';
 
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
@@ -148,7 +149,7 @@ const Leads = () => {
   const getFullImageUrl = (path) => {
     if (!path) return null;
     if (path.startsWith('http')) return path;
-    return path.startsWith('/') ? `https://xoto.ae/api${path}` : path;
+    return path.startsWith('/') ? `${SITE_API_URL}${path}` : path;
   };
 
   // Get customer name

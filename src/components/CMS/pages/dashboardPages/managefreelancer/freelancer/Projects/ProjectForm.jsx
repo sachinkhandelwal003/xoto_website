@@ -22,6 +22,7 @@ import {
   MinusOutlined,
 } from "@ant-design/icons";
 import { apiService } from "../../../../../../../manageApi/utils/custom.apiservice";
+import { ECOMMERCE_URL } from '../../../../../../../config/urls';
 import { showSuccessAlert, showErrorAlert } from "../../../../../../../manageApi/utils/sweetAlert";
 import moment from "moment";
 import axios from "axios";
@@ -74,7 +75,7 @@ const ProjectForm = ({ project, onSuccess, onCancel }) => {
   const fetchCategories = async () => {
     try {
       const { data } = await axios.get(
-        "https://kotiboxglobaltech.online/api/freelancer/category?active=true",
+        `${ECOMMERCE_URL}/freelancer/category?active=true`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -89,7 +90,7 @@ const ProjectForm = ({ project, onSuccess, onCancel }) => {
     if (!catId) return setSubcategories([]);
     try {
       const { data } = await axios.get(
-        `https://kotiboxglobaltech.online/api/freelancer/subcategory?category=${catId}`,
+        `${ECOMMERCE_URL}/freelancer/subcategory?category=${catId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }

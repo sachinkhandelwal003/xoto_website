@@ -3,17 +3,13 @@ import img4 from "../../assets/img/IMG9.png";
 import toast, { Toaster } from "react-hot-toast";
 import { Country } from "country-state-city";
 import { apiService } from "../../manageApi/utils/custom.apiservice";
-import {
-  parsePhoneNumberFromString,
-  validatePhoneNumberLength,
-} from "libphonenumber-js";
+import { parsePhoneNumberFromString, validatePhoneNumberLength } from "libphonenumber-js";
 import bedicon from "../../assets/img/buy/icon-bed.png";
 import tubicon from "../../assets/img/buy/icon-tub.png";
 import layouticon from "../../assets/img/buy/icon-layout.png";
 
 const FALLBACK_IMAGE = "/assets/img/fallback-property.jpg";
 
-// ── Phone Validation ──────────────────────────────────────────────────────────
 const PHONE_LENGTH_RULES = {
   "971": 9, "91": 10, "966": 9, "1": 10, "44": 10, "61": 9,
 };
@@ -50,16 +46,13 @@ const Page2 = () => {
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [errors, setErrors] = useState({});
 
-  // ── Dropdown state ────────────────────────────────────────────────────────
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [countrySearch, setCountrySearch] = useState("");
 
   const [formData, setFormData] = useState({
-    first_name: "", last_name: "", email: "",
-    country_code: "971", mobile: "",
+    first_name: "", last_name: "", email: "", country_code: "971", mobile: "",
   });
 
-  // ── Country options ───────────────────────────────────────────────────────
   const phoneCountryOptions = useMemo(() => {
     const priorityIsoCodes = ["AE", "IN", "SA", "US", "GB", "AU"];
     return Country.getAllCountries().map((c) => ({
@@ -67,17 +60,15 @@ const Page2 = () => {
     })).sort((a, b) => {
       const ap = priorityIsoCodes.includes(a.iso);
       const bp = priorityIsoCodes.includes(b.iso);
-      if (ap && !bp) return -1;
-      if (!ap && bp) return 1;
+      if (ap && !bp) return -1; if (!ap && bp) return 1;
       return a.name.localeCompare(b.name);
     });
   }, []);
 
   const filteredCountries = useMemo(() =>
-    phoneCountryOptions.filter(
-      (c) =>
-        c.name.toLowerCase().includes(countrySearch.toLowerCase()) ||
-        c.code.includes(countrySearch)
+    phoneCountryOptions.filter((c) =>
+      c.name.toLowerCase().includes(countrySearch.toLowerCase()) ||
+      c.code.includes(countrySearch)
     ), [phoneCountryOptions, countrySearch]);
 
   const selectedCountry = phoneCountryOptions.find((c) => c.code === formData.country_code);
@@ -269,13 +260,14 @@ const Page2 = () => {
 
       {/* ── MODAL ── */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
-          <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden border border-purple-100 max-h-[95vh] flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+          <div className="relative w-full max-w-[540px] bg-white shadow-2xl flex flex-col" style={{ borderRadius: "14px" }}>
 
             {/* Close */}
             <button
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 z-20 bg-gradient-to-r from-red-500 to-pink-500 text-white w-9 h-9 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 shadow-lg"
+              className="absolute top-3 right-3 z-20 bg-red-500 text-white w-8 h-8 flex items-center justify-center hover:bg-red-600 transition-colors"
+              style={{ borderRadius: "6px" }}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -283,162 +275,124 @@ const Page2 = () => {
             </button>
 
             {/* Header */}
-            <div className="bg-gradient-to-r from-[#5C039B] to-[#7c3aed] p-6 text-center shrink-0">
-              <h2 className="text-2xl font-bold text-white mb-1">We are Here To Help You</h2>
-              <p className="text-purple-200 text-sm font-medium">
+            <div className="p-7 pb-5 text-center shrink-0" style={{ background: "#5C039B", borderRadius: "14px 14px 0 0" }}>
+              <h2 className="text-xl font-bold text-white mb-1">We are Here To Help You</h2>
+              <p className="text-purple-200 text-sm">
                 Fill in your contact details, our expert advisor will get in touch with you.
               </p>
             </div>
 
             {/* Form */}
-            <div className="p-6 overflow-y-auto custom-scrollbar">
-              <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="p-6">
+              <form onSubmit={handleSubmit} className="space-y-3">
 
                 {/* Name row */}
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="relative">
-                    <input
-                      name="first_name"
-                      value={formData.first_name}
-                      onChange={handleChange}
-                      placeholder="First Name"
-                      className={`p2-input pl-10 ${errors.first_name ? "border-red-400 bg-red-50" : ""}`}
-                    />
-                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    {errors.first_name && <p className="text-red-400 text-[10px] mt-1">{errors.first_name}</p>}
+                  <div>
+                    <div className={`enq-input-wrap ${errors.first_name ? "enq-error" : ""}`}>
+                      <svg className="enq-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      <input name="first_name" value={formData.first_name} onChange={handleChange} placeholder="First Name" className="enq-input" />
+                    </div>
+                    {errors.first_name && <p className="enq-err-msg">{errors.first_name}</p>}
                   </div>
-                  <div className="relative">
-                    <input
-                      name="last_name"
-                      value={formData.last_name}
-                      onChange={handleChange}
-                      placeholder="Last Name"
-                      className={`p2-input pl-10 ${errors.last_name ? "border-red-400 bg-red-50" : ""}`}
-                    />
-                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    {errors.last_name && <p className="text-red-400 text-[10px] mt-1">{errors.last_name}</p>}
+                  <div>
+                    <div className={`enq-input-wrap ${errors.last_name ? "enq-error" : ""}`}>
+                      <svg className="enq-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      <input name="last_name" value={formData.last_name} onChange={handleChange} placeholder="Last Name" className="enq-input" />
+                    </div>
+                    {errors.last_name && <p className="enq-err-msg">{errors.last_name}</p>}
                   </div>
                 </div>
 
                 {/* Email */}
-                <div className="relative">
-                  <input
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="Email Address"
-                    className={`p2-input pl-10 ${errors.email ? "border-red-400 bg-red-50" : ""}`}
-                  />
-                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  {errors.email && <p className="text-red-400 text-[10px] mt-1">{errors.email}</p>}
+                <div>
+                  <div className={`enq-input-wrap ${errors.email ? "enq-error" : ""}`}>
+                    <svg className="enq-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <input name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Email Address" className="enq-input" />
+                  </div>
+                  {errors.email && <p className="enq-err-msg">{errors.email}</p>}
                 </div>
 
-                {/* Phone — custom dropdown + input */}
-                <div className="flex gap-2">
-                  {/* Country Code Dropdown */}
-                  <div className="cc-dropdown-wrap relative flex-shrink-0" style={{ width: "110px" }}>
-                    <button
-                      type="button"
-                      onClick={() => setDropdownOpen((v) => !v)}
-                      className="w-full h-[46px] flex items-center gap-2 px-3 bg-white rounded-xl border-2 border-[#e9d5ff] text-sm font-medium text-gray-700 hover:border-[#5C039B] transition-colors"
-                    >
-                      {selectedCountry && (
-                        <img
-                          src={`https://flagcdn.com/w20/${selectedCountry.iso.toLowerCase()}.png`}
-                          alt=""
-                          className="w-5 h-3 object-cover rounded-sm flex-shrink-0"
-                        />
-                      )}
-                      <span className="text-[13px]">+{formData.country_code}</span>
-                      <svg className="ml-auto w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
+                {/* Phone — flag dropdown + number input */}
+                <div>
+                  <div className={`flex ${errors.mobile ? "enq-phone-error" : ""}`} style={{ border: "1.5px solid #ddd" }}>
+                    {/* Country Code Dropdown */}
+                    <div className="cc-dropdown-wrap relative flex-shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setDropdownOpen((v) => !v)}
+                        className="h-[46px] flex items-center gap-1.5 px-3 bg-gray-50 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors border-r border-gray-200"
+                        style={{ minWidth: "90px" }}
+                      >
+                        {selectedCountry && (
+                          <img src={`https://flagcdn.com/w20/${selectedCountry.iso.toLowerCase()}.png`} alt="" className="w-5 h-3 object-cover flex-shrink-0" />
+                        )}
+                        <span className="text-[13px] font-semibold">+{formData.country_code}</span>
+                        <svg className="w-3 h-3 text-gray-400 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
 
-                    {/* Dropdown panel */}
-                    {dropdownOpen && (
-                      <div className="absolute top-full left-0 mt-1 w-[260px] bg-white border border-purple-100 rounded-xl shadow-xl z-50 overflow-hidden">
-                        {/* Search */}
-                        <div className="p-2 border-b border-gray-100">
-                          <input
-                            autoFocus
-                            type="text"
-                            placeholder="Search country..."
-                            value={countrySearch}
-                            onChange={(e) => setCountrySearch(e.target.value)}
-                            className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg outline-none focus:border-[#5C039B]"
-                          />
-                        </div>
-                        {/* List */}
-                        <div style={{ maxHeight: "220px", overflowY: "auto" }}>
-                          {filteredCountries.map((c) => (
-                            <button
-                              key={c.iso}
-                              type="button"
-                              onClick={() => handleCountryCodeSelect(c.code)}
-                              className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-purple-50 transition-colors text-left"
-                            >
-                              <img
-                                src={`https://flagcdn.com/w20/${c.iso.toLowerCase()}.png`}
-                                alt=""
-                                className="w-5 h-3 object-cover rounded-sm flex-shrink-0"
-                              />
-                              <span className="truncate text-gray-700">{c.name}</span>
-                              <span className="ml-auto text-gray-400 text-xs flex-shrink-0">+{c.code}</span>
-                            </button>
-                          ))}
-                          {filteredCountries.length === 0 && (
-                            <p className="text-center text-gray-400 text-xs py-4">No results</p>
-                          )}
+                      {/* Dropdown panel */}
+                      {dropdownOpen && (
+                        <div className="absolute top-full left-0 mt-1 w-[260px] bg-white border border-gray-200 shadow-2xl z-[9999] overflow-hidden" style={{ borderRadius: "8px" }}>
+                          <div className="p-2 border-b border-gray-100">
+                            <input
+                              autoFocus type="text" placeholder="Search country..."
+                              value={countrySearch} onChange={(e) => setCountrySearch(e.target.value)}
+                              className="w-full px-3 py-1.5 text-sm border border-gray-200 outline-none"
+                              style={{ borderRadius: "2px" }}
+                            />
+                          </div>
+                          <div style={{ maxHeight: "200px", overflowY: "auto" }}>
+                            {filteredCountries.map((c) => (
+                              <button key={c.iso} type="button" onClick={() => handleCountryCodeSelect(c.code)}
+                                className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-purple-50 transition-colors text-left"
+                              >
+                                <img src={`https://flagcdn.com/w20/${c.iso.toLowerCase()}.png`} alt="" className="w-5 h-3 object-cover flex-shrink-0" />
+                                <span className="truncate text-gray-700">{c.name}</span>
+                                <span className="ml-auto text-gray-400 text-xs flex-shrink-0">+{c.code}</span>
+                              </button>
+                            ))}
+                            {filteredCountries.length === 0 && (
+                              <p className="text-center text-gray-400 text-xs py-4">No results</p>
+                            )}
                         </div>
                       </div>
                     )}
                   </div>
 
-                  {/* Phone Input */}
-                  <div className="relative flex-1">
+                    {/* Number input */}
                     <input
-                      name="mobile"
-                      type="text"
-                      inputMode="numeric"
-                      value={formData.mobile}
-                      onChange={handlePhoneChange}
-                      placeholder={`Phone (${PHONE_LENGTH_RULES[formData.country_code] || 15} digits)`}
-                      className={`p2-input pl-10 h-[46px] ${errors.mobile ? "border-red-400 bg-red-50" : ""}`}
+                      name="mobile" type="text" inputMode="numeric"
+                      value={formData.mobile} onChange={handlePhoneChange}
+                      placeholder="Mobile Number"
+                      className="flex-1 h-[46px] px-3 text-sm outline-none bg-white text-gray-800"
+                      style={{ minWidth: 0 }}
                     />
-                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                    </svg>
-                    {errors.mobile && <p className="text-red-400 text-[10px] mt-1">{errors.mobile}</p>}
                   </div>
+                  {errors.mobile && <p className="enq-err-msg">{errors.mobile}</p>}
                 </div>
 
                 {/* Submit */}
                 <button
                   type="submit"
                   disabled={formLoading}
-                  className="w-full py-4 rounded-xl text-white font-bold bg-gradient-to-r from-purple-600 to-violet-600 text-[15px] transition-all duration-200 hover:opacity-90 hover:shadow-lg disabled:opacity-60 flex items-center justify-center gap-2"
+                  className="w-full py-3.5 text-white font-bold text-[15px] transition-all hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2 mt-1"
+                  style={{ background: "#5C039B", borderRadius: "8px" }}
                 >
                   {formLoading ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
                       Submitting...
                     </>
-                  ) : (
-                    <>
-                      Submit Enquiry
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                      </svg>
-                    </>
-                  )}
+                  ) : "Submit Enquiry"}
                 </button>
               </form>
             </div>
@@ -447,25 +401,29 @@ const Page2 = () => {
       )}
 
       <style>{`
-        .p2-input {
-          width: 100%;
-          padding: 0.7rem 1rem 0.7rem 2.4rem;
-          border-radius: 0.75rem;
-          border: 2px solid #e9d5ff;
-          background: white;
-          outline: none;
-          font-size: 13px;
-          transition: border-color 0.2s, box-shadow 0.2s;
-          color: #1a1a2e;
+        .enq-input-wrap {
+          display: flex; align-items: center;
+          border: 1.5px solid #ddd;
+          background: white; height: 46px;
+          transition: border-color 0.2s;
         }
-        .p2-input:focus {
-          border-color: #5C039B;
-          box-shadow: 0 0 0 3px rgba(92,3,155,0.08);
+        .enq-input-wrap:focus-within { border-color: #5C039B; }
+        .enq-error { border-color: #f87171 !important; background: #fff5f5; }
+        .enq-phone-error { border-color: #f87171 !important; }
+        .enq-icon {
+          width: 16px; height: 16px; flex-shrink: 0;
+          color: #5C039B; margin-left: 12px; margin-right: 8px;
         }
-        .p2-input::placeholder { color: #b0a8c0; font-size: 13px; }
-        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f3e8ff; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #9333ea; border-radius: 4px; }
+        .enq-input {
+          flex: 1; height: 100%; border: none; outline: none;
+          font-size: 13px; color: #1a1a2e; background: transparent;
+          padding-right: 12px;
+        }
+        .enq-input::placeholder { color: #aaa; }
+        .enq-err-msg { color: #ef4444; font-size: 10px; margin-top: 3px; }
+        .enq-scrollbar::-webkit-scrollbar { width: 4px; }
+        .enq-scrollbar::-webkit-scrollbar-track { background: #f3e8ff; }
+        .enq-scrollbar::-webkit-scrollbar-thumb { background: #5C039B; }
       `}</style>
     </div>
   );

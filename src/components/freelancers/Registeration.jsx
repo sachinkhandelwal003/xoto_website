@@ -10,6 +10,7 @@ import {
 } from "antd";
 import registerimage from "../../assets/img/registergarden.webp";
 import { apiService } from "../../manageApi/utils/custom.apiservice";
+import { SITE_API_URL } from '../../config/urls';
 
 // --- Libraries ---
 import { Country, State, City } from 'country-state-city';
@@ -176,7 +177,7 @@ const Registration = () => {
 
     setLoading(prev => ({ ...prev, emailOtpSending: true }));
     try {
-      await apiService.post("https://xoto.ae/api/otp/email-otp/send", { email: watchEmail });
+      await apiService.post(`${SITE_API_URL}/otp/email-otp/send`, { email: watchEmail });
       message.success("OTP sent! Please check your email inbox.");
       setShowEmailOtpInput(true);
     } catch (error) {
@@ -199,7 +200,7 @@ const Registration = () => {
 
     setLoading(prev => ({ ...prev, emailOtpVerifying: true }));
     try {
-      await apiService.post("https://xoto.ae/api/otp/email-otp/verify", {
+      await apiService.post(`${SITE_API_URL}/otp/email-otp/verify`, {
         email: watchEmail,
         otp: emailOtpValue
       });

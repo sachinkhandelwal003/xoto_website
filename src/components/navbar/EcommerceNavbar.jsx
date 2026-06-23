@@ -12,7 +12,8 @@ import { useRouter } from "next/router";
 import { motion, AnimatePresence } from "framer-motion";
 import AiDesigner from "../ecommerce/AiDesigner";
 import { useSelector, useDispatch } from 'react-redux';
-import { logoutUser } from '../../manageApi/store/authSlice'; // Adjust path
+import { logoutUser } from '../../manageApi/store/authSlice';
+import { ECOMMERCE_URL } from '../../config/urls';
 import { useCart } from '../../manageApi/context/CartContext'; // Adjust path
 import Box from '@mui/material/Box';
 import Avatar from '@mui/material/Avatar';
@@ -187,7 +188,7 @@ const EcommerceNavbar = () => {
 
     try {
       const response = await axios.get(
-        "https://kotiboxglobaltech.online/api/customer/profile",
+        `${ECOMMERCE_URL}/customer/profile`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

@@ -2,6 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import React, { useState, useEffect } from "react";
 import { apiService } from "../../manageApi/utils/custom.apiservice";
+import { UPLOAD_URL } from '../../config/urls';
 import {
   Button, Form, Input, Card, Select, Typography, Row, Col,
   Divider, message, notification, Switch, Upload, InputNumber,
@@ -21,7 +22,7 @@ const { TextArea } = Input;
 const { Option } = Select;
 
 const THEME = { primary: "#7c3aed", success: "#10b981", error: "#ef4444" };
-const UPLOAD_API = "https://xoto.ae/api/upload";
+const UPLOAD_API = UPLOAD_URL;
 
 /* ── UAE Areas ── */
 const UAE_AREAS = {

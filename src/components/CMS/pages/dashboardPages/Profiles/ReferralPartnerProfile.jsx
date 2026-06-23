@@ -18,6 +18,7 @@ import {
 } from "@ant-design/icons";
 import { apiService } from "../../../../../manageApi/utils/custom.apiservice";
 import { useSelector } from "react-redux";
+import { UPLOAD_URL } from '../../../../../config/urls';
 
 const { Text, Title, Paragraph } = Typography;
 const { Step } = Steps;
@@ -205,7 +206,7 @@ const ReferralPartnerProfile = () => {
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await apiService.post("https://xoto.ae/api/upload", formData);
+      const response = await apiService.post(UPLOAD_URL, formData);
       const resData = response?.data ?? response;
       const fileUrl = resData?.file?.url;
 

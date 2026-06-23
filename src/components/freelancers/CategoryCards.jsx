@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FaTools, FaSearch, FaBolt, FaPhone } from "react-icons/fa";
 import { motion } from "framer-motion";
 import axios from "axios";
+import { ECOMMERCE_URL } from '../../config/urls';
 
 const CategoryCards = ({ categoryId }) => {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ const CategoryCards = ({ categoryId }) => {
       try {
         setLoading(true);
         const { data } = await axios.get(
-          `https://kotiboxglobaltech.online/api/freelancer/subcategory?category=${categoryId}`
+          `${ECOMMERCE_URL}/freelancer/subcategory?category=${categoryId}`
         );
 
         if (data.success && Array.isArray(data.subcategories)) {

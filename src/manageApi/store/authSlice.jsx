@@ -2,12 +2,9 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
+import { BACKEND_URL } from '../../config/urls';
 
-// Set base URL globally fsdf
-// const API_BASE = 'https://kotiboxglobaltech.online/api';
-// const API_BASE = 'http://localhost:5000/api';
-// const API_BASE = axios.defaults.baseURL || 'https://xoto.ae/api';
-const API_BASE = 'https://xotobackend.kotiboxglobaltech.site/';
+const API_BASE = BACKEND_URL;
 
 
   

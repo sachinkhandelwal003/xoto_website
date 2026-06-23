@@ -1,10 +1,11 @@
 import { io } from "socket.io-client";
+import { SOCKET_URL } from '../config/urls';
 
 let socket = null;
 
 export const getSocket = () => {
   if (!socket || socket.disconnected) {
-    socket = io("https://xoto.ae", {
+    socket = io(SOCKET_URL, {
       transports: ["websocket"],
       reconnection: true,
     });

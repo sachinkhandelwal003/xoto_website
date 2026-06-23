@@ -1,11 +1,9 @@
 // src/utils/apiService.js
 import axios from 'axios';
 import { showToast } from './toast';
+import { BACKEND_URL } from '../../config/urls';
 
-// const API_BASE_URL = 'http://localhost:5000/api/';  
-// const API_BASE_URL = 'https://kotiboxglobaltech.online/api/';
-// const API_BASE_URL = 'https://xoto.ae/api/';
-const API_BASE_URL = 'https://xotobackend.kotiboxglobaltech.site/';
+const API_BASE_URL = BACKEND_URL;
 
 // ihfwierhvjfdnv;ioenv;ioeasnj
 

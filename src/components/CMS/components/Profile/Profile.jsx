@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { logoutUser } from '../../../../manageApi/store/authSlice';
 import axios from 'axios';
+import { ECOMMERCE_URL } from '../../../../config/urls';
 import {
   EnvelopeIcon,
   PhoneIcon,
@@ -37,7 +38,7 @@ const Profile = () => {
     const fetchUserData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`https://kotiboxglobaltech.online/api/customer/profile`, {
+        const response = await axios.get(`${ECOMMERCE_URL}/customer/profile`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

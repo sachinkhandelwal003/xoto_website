@@ -16,6 +16,7 @@ import {
   CheckCircleFilled, WarningOutlined, SyncOutlined
 } from "@ant-design/icons";
 import { apiService } from "../../../../../manageApi/utils/custom.apiservice";
+import { UPLOAD_URL } from '../../../../../config/urls';
 
 const { Text, Title, Paragraph } = Typography;
 const { Step } = Steps;
@@ -228,7 +229,7 @@ const handleImageUploadRequest = async ({ file, onSuccess, onError }) => {
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await apiService.post("https://xoto.ae/api/upload", formData);
+      const response = await apiService.post(UPLOAD_URL, formData);
       const resData = response?.data ?? response;
       const fileUrl = resData?.file?.url;
 
@@ -308,7 +309,7 @@ const handleImageUploadRequest = async ({ file, onSuccess, onError }) => {
         const formData = new FormData();
         formData.append("file", item.file);
 
-        const response = await apiService.post("https://xoto.ae/api/upload", formData);
+        const response = await apiService.post(UPLOAD_URL, formData);
         const resData = response?.data ?? response;
         const fileUrl = resData?.file?.url;
 

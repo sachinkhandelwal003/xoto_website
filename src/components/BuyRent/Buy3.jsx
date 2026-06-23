@@ -136,6 +136,9 @@ const [selectedProperty, setSelectedProperty] = useState(null);
   const [citiesList, setCitiesList] = useState([]);
 
   // 4. Memoized Phone Country Codes
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [countrySearch, setCountrySearch] = useState("");
+
   const phoneCountryOptions = useMemo(() => {
     const priorityIsoCodes = ["AE", "IN", "SA", "US", "GB", "AU"];
     return Country.getAllCountries().map((country) => ({
@@ -149,17 +152,27 @@ const [selectedProperty, setSelectedProperty] = useState(null);
     });
   }, []);
 
-  useEffect(() => {
-  if (openModal) {
-    document.body.style.overflow = "hidden";
-  } else {
-    document.body.style.overflow = "auto";
-  }
+  const filteredCountries = useMemo(() =>
+    phoneCountryOptions.filter((c) =>
+      c.name.toLowerCase().includes(countrySearch.toLowerCase()) ||
+      c.code.includes(countrySearch)
+    ), [phoneCountryOptions, countrySearch]);
 
-  return () => {
-    document.body.style.overflow = "auto";
-  };
-}, [openModal]);
+  const selectedCountry = phoneCountryOptions.find((c) => c.code === formData.country_code);
+
+  useEffect(() => {
+    document.body.style.overflow = openModal ? "hidden" : "auto";
+    return () => { document.body.style.overflow = "auto"; };
+  }, [openModal]);
+
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    const handler = (e) => {
+      if (!e.target.closest(".cc-dropdown-wrap")) setDropdownOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [dropdownOpen]);
 
 useEffect(() => {
   const fetchProperties = async () => {
@@ -358,145 +371,101 @@ const payload = {
 
       {/* Modal */}
       {openModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
-          <div className="relative w-full max-w-2xl bg-gradient-to-br from-white via-purple-50 to-violet-50 rounded-3xl shadow-2xl overflow-hidden border border-purple-100 max-h-[95vh] flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+          <div className="relative w-full max-w-[540px] bg-white shadow-2xl flex flex-col" style={{ borderRadius: "14px" }}>
+
+            {/* Close */}
             <button
               onClick={() => setOpenModal(false)}
-              className="absolute top-4 right-4 z-20 bg-gradient-to-r from-red-500 to-pink-500 text-white w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 shadow-lg"
+              className="absolute top-3 right-3 z-20 bg-red-500 text-white w-8 h-8 flex items-center justify-center hover:bg-red-600 transition-colors"
+              style={{ borderRadius: "6px" }}
             >
-              <X size={20} />
+              <X size={16} />
             </button>
 
-            <div className="bg-gradient-to-r from-purple-600 to-violet-600 p-6 md:p-8 text-center shrink-0">
-              <h3 className="text-2xl md:text-4xl font-bold text-white mb-2 md:mb-3">
-                {t("modal.title")}
-              </h3>
-              <p className="text-purple-100 text-base md:text-lg font-medium">
-                {t("modal.subtitle")}
-              </p>
+            {/* Header */}
+            <div className="p-7 pb-5 text-center shrink-0" style={{ background: "#5C039B", borderRadius: "14px 14px 0 0" }}>
+              <h3 className="text-xl font-bold text-white mb-1">{t("modal.title")}</h3>
+              <p className="text-purple-200 text-sm">{t("modal.subtitle")}</p>
             </div>
 
-            <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar">
-              <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
-                
+            {/* Form */}
+            <div className="p-6">
+              <form onSubmit={handleSubmit} className="space-y-3">
+
                 {/* Name */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                  <div className="relative">
-                    <input name="first_name" value={formData.first_name} onChange={handleChange} placeholder={t("form.firstName")} className={`premium-input pl-12 ${errors.first_name ? 'border-red-500 bg-red-50' : ''}`} />
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-600"><User size={20} /></div>
-                    {errors.first_name && <p className="text-red-500 text-xs mt-1 absolute">{errors.first_name}</p>}
-                  </div>
-                  <div className="relative">
-                    <input name="last_name" value={formData.last_name} onChange={handleChange} placeholder={t("form.lastName")} className={`premium-input pl-12 ${errors.last_name ? 'border-red-500 bg-red-50' : ''}`} />
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-600"><User size={20} /></div>
-                    {errors.last_name && <p className="text-red-500 text-xs mt-1 absolute">{errors.last_name}</p>}
-                  </div>
-                </div>
-
-                <div className="relative">
-                  <input name="email" type="email" value={formData.email} onChange={handleChange} placeholder={t("form.email")} className={`premium-input pl-12 ${errors.email ? 'border-red-500 bg-red-50' : ''}`} />
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-600"><Mail size={20} /></div>
-                  {errors.email && <p className="text-red-500 text-xs mt-1 absolute">{errors.email}</p>}
-                </div>
-
-                {/* Phone & Country Code */}
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <div className="relative w-full sm:w-32 h-[50px]">
-                    <Select
-                        value={formData.country_code}
-                        onChange={handleCountryCodeChange}
-                        showSearch
-                        optionFilterProp="children"
-                        filterOption={(input, option) => option.children.props?.children[1]?.props?.children[1]?.toLowerCase().includes(input.toLowerCase()) || option.value.includes(input)}
-                        className="w-full h-full custom-select-property"
-                        dropdownMatchSelectWidth={300}
-                    >
-                        {phoneCountryOptions.map((item) => (
-                        <Option key={item.iso} value={item.code}>
-                            <div className="flex items-center">
-                            <img src={`https://flagcdn.com/w20/${item.iso.toLowerCase()}.png`} srcSet={`https://flagcdn.com/w40/${item.iso.toLowerCase()}.png 2x`} width="20" alt={item.name} style={{ marginRight: 8, borderRadius: 2 }} />
-                            <span>+{item.code}</span>
-                            </div>
-                        </Option>
-                        ))}
-                    </Select>
-                  </div>
-
-                  <div className="relative flex-1">
-                    <input name="mobile" type="text" inputMode="numeric" value={formData.mobile} onChange={handlePhoneChange} placeholder={`${t("form.phone")} (${PHONE_LENGTH_RULES[formData.country_code] || 15} digits)`} className={`premium-input pl-12 h-[50px] ${errors.mobile ? 'border-red-500 bg-red-50' : ''}`} />
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-600"><Phone size={20} /></div>
-                    {errors.mobile && <p className="text-red-500 text-xs mt-1 absolute bottom-[-18px]">{errors.mobile}</p>}
-                  </div>
-                </div>  
-
-                {/* Occupation */}
-                {/* <div className="relative">
-                  <input name="occupation" value={formData.occupation} onChange={handleChange} placeholder={t("form.occupation")} className={`premium-input pl-12 ${errors.occupation ? 'border-red-500 bg-red-50' : ''}`} />
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-600"><Briefcase size={20} /></div>
-                  {errors.occupation && <p className="text-red-500 text-xs mt-1 absolute">{errors.occupation}</p>}
-                </div> */}
-
-                {/* Location Dropdowns */}
-                <div className="space-y-4">
-                    {/* Country */}
-                    {/* <div className="relative">
-                        <Select
-                            placeholder="Select Country"
-                            showSearch
-                            optionFilterProp="children"
-                            onChange={handleLocationCountryChange}
-                            filterOption={(input, option) => option.children.toLowerCase().includes(input.toLowerCase())}
-                            className={`w-full custom-select-property ${errors.location_country ? "border-red-500 rounded-[0.75rem]" : ""}`}
-                            dropdownMatchSelectWidth={false}
-                        >
-                            {countriesList.map((country) => (
-                                <Option key={country.isoCode} value={country.isoCode}>{country.name}</Option>
-                            ))}
-                        </Select>
-                        {errors.location_country && <p className="text-red-500 text-xs mt-3 absolute">{errors.location_country}</p>}
-                    </div> */}
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 md:mt-6 p-3">
-                        {/* State */}
-                        {/* <div className="relative">
-                            <Select
-                                placeholder="Select State"
-                                showSearch
-                                optionFilterProp="children"
-                                onChange={handleLocationStateChange}
-                                disabled={!statesList.length}
-                                filterOption={(input, option) => option.children.toLowerCase().includes(input.toLowerCase())}
-                                className={`w-full custom-select-property ${errors.state ? "border-red-500 rounded-[0.75rem]" : ""}`}
-                            >
-                                {statesList.map((state) => (
-                                    <Option key={state.isoCode} value={state.isoCode}>{state.name}</Option>
-                                ))}
-                            </Select>
-                            {errors.state && <p className="text-red-500 text-xs mt-2 absolute">{errors.state}</p>}
-                        </div> */}
-
-                        {/* City */}
-                        {/* <div className="relative">
-                            <Select
-                                placeholder="Select City"
-                                showSearch
-                                optionFilterProp="children"
-                                onChange={handleLocationCityChange}
-                                disabled={!citiesList.length}
-                                filterOption={(input, option) => option.children.toLowerCase().includes(input.toLowerCase())}
-                                className={`w-full custom-select-property ${errors.city ? "border-red-500 rounded-[0.75rem]" : ""}`}
-                            >
-                                {citiesList.map((city) => (
-                                    <Option key={city.name} value={city.name}>{city.name}</Option>
-                                ))}
-                            </Select>
-                            {errors.city && <p className="text-red-500 text-xs mt-3 absolute">{errors.city}</p>}
-                        </div> */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <div className={`b3-input-wrap ${errors.first_name ? "b3-error" : ""}`}>
+                      <svg className="b3-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                      <input name="first_name" value={formData.first_name} onChange={handleChange} placeholder={t("form.firstName")} className="b3-input" />
                     </div>
+                    {errors.first_name && <p className="b3-err-msg">{errors.first_name}</p>}
+                  </div>
+                  <div>
+                    <div className={`b3-input-wrap ${errors.last_name ? "b3-error" : ""}`}>
+                      <svg className="b3-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                      <input name="last_name" value={formData.last_name} onChange={handleChange} placeholder={t("form.lastName")} className="b3-input" />
+                    </div>
+                    {errors.last_name && <p className="b3-err-msg">{errors.last_name}</p>}
+                  </div>
                 </div>
 
-                <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-purple-600 to-violet-600 text-white py-4 md:py-5 rounded-xl text-lg font-bold hover:shadow-xl hover:scale-[1.01] transition-all flex items-center justify-center gap-2">
-                 {loading ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : t("actions.submit")}
+                {/* Email */}
+                <div>
+                  <div className={`b3-input-wrap ${errors.email ? "b3-error" : ""}`}>
+                    <svg className="b3-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                    <input name="email" type="email" value={formData.email} onChange={handleChange} placeholder={t("form.email")} className="b3-input" />
+                  </div>
+                  {errors.email && <p className="b3-err-msg">{errors.email}</p>}
+                </div>
+
+                {/* Phone — flag dropdown + number input */}
+                <div>
+                  <div className={`flex ${errors.mobile ? "b3-phone-error" : ""}`} style={{ border: "1.5px solid #ddd" }}>
+                    <div className="cc-dropdown-wrap relative flex-shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setDropdownOpen((v) => !v)}
+                        className="h-[46px] flex items-center gap-1.5 px-3 bg-gray-50 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors border-r border-gray-200"
+                        style={{ minWidth: "90px" }}
+                      >
+                        {selectedCountry && <img src={`https://flagcdn.com/w20/${selectedCountry.iso.toLowerCase()}.png`} alt="" className="w-5 h-3 object-cover flex-shrink-0" />}
+                        <span className="text-[13px] font-semibold">+{formData.country_code}</span>
+                        <svg className="w-3 h-3 text-gray-400 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                      </button>
+                      {dropdownOpen && (
+                        <div className="absolute top-full left-0 mt-1 w-[260px] bg-white border border-gray-200 shadow-2xl z-[9999] overflow-hidden" style={{ borderRadius: "8px" }}>
+                          <div className="p-2 border-b border-gray-100">
+                            <input autoFocus type="text" placeholder="Search country..." value={countrySearch} onChange={(e) => setCountrySearch(e.target.value)} className="w-full px-3 py-1.5 text-sm border border-gray-200 outline-none" style={{ borderRadius: "2px" }} />
+                          </div>
+                          <div style={{ maxHeight: "200px", overflowY: "auto" }}>
+                            {filteredCountries.map((c) => (
+                              <button key={c.iso} type="button"
+                                onClick={() => { setFormData((prev) => ({ ...prev, country_code: c.code, mobile: prev.mobile.slice(0, PHONE_LENGTH_RULES[c.code] || 15) })); setDropdownOpen(false); setCountrySearch(""); }}
+                                className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-purple-50 transition-colors text-left"
+                              >
+                                <img src={`https://flagcdn.com/w20/${c.iso.toLowerCase()}.png`} alt="" className="w-5 h-3 object-cover flex-shrink-0" />
+                                <span className="truncate text-gray-700">{c.name}</span>
+                                <span className="ml-auto text-gray-400 text-xs flex-shrink-0">+{c.code}</span>
+                              </button>
+                            ))}
+                            {filteredCountries.length === 0 && <p className="text-center text-gray-400 text-xs py-4">No results</p>}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <input name="mobile" type="text" inputMode="numeric" value={formData.mobile} onChange={handlePhoneChange} placeholder="Mobile Number" className="flex-1 h-[46px] px-3 text-sm outline-none bg-white text-gray-800" style={{ minWidth: 0 }} />
+                  </div>
+                  {errors.mobile && <p className="b3-err-msg">{errors.mobile}</p>}
+                </div>
+
+                {/* Submit */}
+                <button type="submit" disabled={loading}
+                  className="w-full py-3.5 text-white font-bold text-[15px] transition-all hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2 mt-1"
+                  style={{ background: "#5C039B", borderRadius: "8px" }}
+                >
+                  {loading ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" /> : t("actions.submit")}
                 </button>
               </form>
             </div>
@@ -504,47 +473,18 @@ const payload = {
         </div>
       )}
 
-      {/* Global CSS for Antd Select */}
       <style jsx global>{`
-        .premium-input {
-          width: 100%;
-          padding: 0.8rem 1rem 0.8rem 3rem;
-          border-radius: 0.75rem;
-          border: 2px solid #e9d5ff;
-          background: white;
-          outline: none;
-          font-size: 1rem;
-          transition: all 0.3s;
-        }
-        @media (min-width: 768px) {
-          .premium-input { padding: 1rem 1.25rem 1rem 3rem; }
-        }
-        .premium-input:focus {
-          border-color: #9333ea;
-          box-shadow: 0 0 0 4px rgba(147, 51, 234, 0.1);
-        }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f3e8ff; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #9333ea; border-radius: 4px; }
-
-        /* Antd Select Styles */
-        .custom-select-property .ant-select-selector {
-          border-radius: 0.75rem !important; 
-          border: 2px solid #e9d5ff !important; 
-          height: 100% !important;
-          min-height: 50px !important; 
-          display: flex !important;
-          align-items: center !important;
-          padding-left: 12px !important;
-          box-shadow: none !important;
-        }
-        .custom-select-property .ant-select-selector:hover {
-          border-color: #9333ea !important;
-        }
-        .custom-select-property.ant-select-focused .ant-select-selector {
-          border-color: #9333ea !important;
-          box-shadow: 0 0 0 4px rgba(147, 51, 234, 0.1) !important;
-        }
+        .b3-input-wrap { display:flex; align-items:center; border:1.5px solid #ddd; background:white; height:46px; transition:border-color 0.2s; }
+        .b3-input-wrap:focus-within { border-color: #5C039B; }
+        .b3-error { border-color: #f87171 !important; background: #fff5f5; }
+        .b3-phone-error { border-color: #f87171 !important; }
+        .b3-icon { width:16px; height:16px; flex-shrink:0; color:#5C039B; margin-left:12px; margin-right:8px; }
+        .b3-input { flex:1; height:100%; border:none; outline:none; font-size:13px; color:#1a1a2e; background:transparent; padding-right:12px; }
+        .b3-input::placeholder { color: #aaa; }
+        .b3-err-msg { color:#ef4444; font-size:10px; margin-top:3px; }
+        .b3-scrollbar::-webkit-scrollbar { width:4px; }
+        .b3-scrollbar::-webkit-scrollbar-track { background:#f3e8ff; }
+        .b3-scrollbar::-webkit-scrollbar-thumb { background:#5C039B; }
       `}</style>
     </>
   );

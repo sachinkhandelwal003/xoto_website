@@ -76,6 +76,7 @@ import {
 } from '@ant-design/icons';
 
 import { showSuccessAlert, showErrorAlert, showConfirmDialog } from '../../../../../manageApi/utils/sweetAlert';
+import { SITE_API_URL } from '../../../../../config/urls';
 
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
@@ -98,7 +99,7 @@ const PURPLE_THEME = {
   light: '#f8fafc'
 };
 
-const BASE_URL = "https://xoto.ae/api";
+const BASE_URL = SITE_API_URL;
 
 const LeadsList = () => {
   const [leads, setLeads] = useState([]);

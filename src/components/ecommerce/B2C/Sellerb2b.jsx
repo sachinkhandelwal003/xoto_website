@@ -5,13 +5,14 @@ import {
 } from '@mui/material';
 import { Upload as UploadIcon } from '@mui/icons-material';
 import axios from 'axios';
+import { ECOMMERCE_URL } from '../../../config/urls';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 
 // Base API URLs
-const API_URL = 'https://kotiboxglobaltech.online/api/vendor/b2b';
-const OTP_API_URL = 'https://kotiboxglobaltech.online/api/auth/otp';
+const API_URL = `${ECOMMERCE_URL}/vendor/b2b`;
+const OTP_API_URL = `${ECOMMERCE_URL}/auth/otp`;
 
 // File upload validation (only checks file type and size, no form validation)
 const validateFile = (file) => {

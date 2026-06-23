@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { SITE_API_URL, UPLOAD_URL as UPLOAD_URL_ENV } from '../../../../config/urls';
 import {
   Button, Modal, Form, Input, Popconfirm, Card,
   Typography, Avatar, Row, Col, Statistic, Space, Divider, message, notification, Tooltip, Switch, Tag, Upload
@@ -23,8 +24,8 @@ const THEME = {
 
 const AddCategory = () => {
   // Base URL
-  const BASE_URL = "https://xoto.ae/api/products"; 
-  const UPLOAD_URL = "https://xoto.ae/api/upload";
+  const BASE_URL = `${SITE_API_URL}/products`;
+  const UPLOAD_URL = UPLOAD_URL_ENV;
 
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
