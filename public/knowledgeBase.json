@@ -1,0 +1,73 @@
+{
+  "en": {
+    "hello": "Hello! I am Xobia, your AI mortgage and property assistant from Xoto. I can help you understand UAE home loans, property prices, eligibility, and the buying process. What would you like to know?",
+    "whoAmI": "I am Xobia — Xoto's AI specialist for UAE mortgages and real estate. I can guide you on loan eligibility, down payments, interest rates, property search, and the full buying journey. Ask me anything!",
+    "mortgage": "A mortgage is a home loan where the bank finances your property purchase. In the UAE, banks can lend up to 80% of the property value for properties under AED 5 million, and 70% for properties above AED 5 million.",
+    "eligibility": "To be eligible for a UAE mortgage, you need a stable income, a good credit score, and a minimum salary of around AED 10,000–15,000 per month depending on the bank. Your total monthly debt repayments must not exceed 50% of your salary — this is called the DBR rule.",
+    "dbr": "DBR stands for Debt Burden Ratio. In the UAE, your total monthly loan repayments — including the new mortgage — must not exceed 50% of your monthly salary. For UAE Nationals, the limit can be 55%.",
+    "downPayment": "The minimum down payment in the UAE is 20% for properties under AED 5 million, and 30% for properties above AED 5 million. For non-residents, the down payment is 25% or more.",
+    "ltv": "LTV stands for Loan-to-Value ratio. In the UAE, the maximum LTV is 80% for properties under AED 5 million, meaning the bank lends 80% and you pay 20% as a down payment.",
+    "interestRate": "UAE mortgage rates typically range from 4% to 6% per year. Banks offer fixed rate (stable for 1–5 years) and variable rate (changes with the market).",
+    "preApproval": "A mortgage pre-approval is a letter from the bank confirming how much they are willing to lend you before you find a property. Pre-approvals are usually valid for 60 to 90 days.",
+    "tenure": "UAE mortgage loan terms can go up to 25 years. The loan must be fully repaid before retirement age — 65 for salaried employees and 70 for self-employed individuals.",
+    "process": "The UAE mortgage process has 5 steps: check eligibility and get pre-approved, find your property, submit documents to the bank, bank valuates the property, and sign the transfer at the DLD.",
+    "documents": "For a UAE mortgage you typically need: passport and visa copy, Emirates ID, last 3–6 months salary slips, bank statements, employment letter, and property details.",
+    "banks": "Xoto partners with Emirates NBD, Abu Dhabi Commercial Bank, Dubai Islamic Bank, Mashreq Bank, and First Abu Dhabi Bank. We compare offers and find the best rate for your profile.",
+    "offPlan": "Off-plan properties are bought before they are built. Developers usually offer 0% interest payment plans during construction. Once completed, you can finance the remaining balance with a standard mortgage.",
+    "price": "UAE property prices vary widely. Studio apartments in Dubai start from AED 350,000. 1-bedroom apartments average AED 700,000 to AED 1.2 million. Luxury villas in prime areas range from AED 10 million and above.",
+    "location": "Popular property areas in Dubai include Downtown Dubai, Dubai Marina, Palm Jumeirah, Business Bay, and Jumeirah Village Circle. In Abu Dhabi: Yas Island, Al Reem Island, and Saadiyat Island.",
+    "booking": "To buy a UAE property, you pay a 10% deposit, sign the Sales and Purchase Agreement, then apply for your mortgage. The final transfer happens at the Dubai Land Department.",
+    "developer": "We partner with top UAE developers including Emaar, Damac, Aldar, Sobha Realty, and Nakheel — known for quality construction, on-time delivery, and strong after-sales service.",
+    "contact": "You can reach our team at info@xoto.ae or call us at +971 4 000 0000. Our mortgage specialists are available 7 days a week.",
+    "amenities": "UAE properties typically include 24/7 security, swimming pools, gyms, children's play areas, covered parking, and landscaped gardens. Premium developments also offer smart home systems and concierge services.",
+    "about": "Xoto is the UAE's premier AI-powered property lifecycle platform. We unite real estate discovery, home financing, interior design, and eco-friendly landscaping into a single seamless ecosystem.",
+    "store": "The Xoto Store is an e-commerce platform where you can purchase premium furniture, decor, smart home appliances, and building materials to design and enhance your space.",
+    "properties": "Our Properties page displays premium real estate listings across the UAE. You can search, explore, and purchase apartments, luxury villas, and penthouses.",
+    "rent": "The Rental page helps you browse a wide range of rental apartments and villas in prime UAE locations, complete with flexible leasing options.",
+    "aiPlanner": "The AI Planner is our signature digital design tool. It uses advanced artificial intelligence to help you visualize, modify, and generate custom interior layouts and landscaping plans.",
+    "designs": "Our Designs page showcases beautiful, finished interior and landscaping concepts created by our community of professional designers and contractors.",
+    "mortgages": "The Mortgages page offers AI calculators to check your loan eligibility and affordability. We partner with leading UAE banks to get you pre-approved quickly.",
+    "howItWorks": "Xoto works in three easy steps: Discover your dream property, Finance it using our digital mortgage tools, and Enhance it with AI design and store products.",
+    "quotation": "The Quotation page allows you to submit your property details to receive a customized pricing estimate for interior design or landscaping work.",
+    "default": "I am Xobia, your Xoto property and mortgage assistant. I can help with UAE home loans, down payments, eligibility, property prices, and the buying process. Please ask me anything or visit xoto.ae to speak with our team."
+  },
+  "ar": {
+    "hello": "مرحباً! أنا زوبيا (Xobia)، مساعدتك الذكية للعقارات من زوتو. كيف يمكنني مساعدتك اليوم؟",
+    "mortgage": "الرهن العقاري هو قرض عقاري تموله البنوك. في الإمارات، يمكن للبنوك إقراض حتى 80٪ من قيمة العقار للعقارات التي تقل عن 5 مليون درهم.",
+    "downPayment": "الدفعة الأولى في الإمارات 20٪ للعقارات أقل من 5 مليون درهم و30٪ للعقارات أعلى من ذلك.",
+    "price": "تبدأ أسعار الشقق من 350,000 درهم للاستوديو في دبي. الشقق المكونة من غرفة نوم واحدة تتراوح من 700,000 إلى 1.2 مليون درهم.",
+    "contact": "يمكنك التواصل معنا على info@xoto.ae أو الاتصال على +971 4 000 0000.",
+    "about": "زوتو هي المنصة الرائدة في دولة الإمارات المدعومة بالذكاء الاصطناعي لإدارة دورة حياة العقار.",
+    "default": "أنا زوبيا، مساعدتك الذكية من زوتو. يمكنني مساعدتك في العقارات والقروض العقارية في الإمارات."
+  },
+  "hi": {
+    "hello": "नमस्ते! मैं ज़ोबिया हूँ — Xoto की AI मॉर्गेज और प्रॉपर्टी सहायक। आप मुझसे यूएई होम लोन, पात्रता, डाउन पेमेंट — कुछ भी पूछ सकते हैं।",
+    "mortgage": "मॉर्गेज एक होम लोन है जिसमें बैंक आपकी प्रॉपर्टी खरीदने के लिए पैसे देता है। यूएई में AED 5 मिलियन से कम की प्रॉपर्टी पर 80% तक लोन मिलता है।",
+    "downPayment": "यूएई में AED 5 मिलियन से कम की प्रॉपर्टी पर 20% डाउन पेमेंट देनी होती है। AED 5 मिलियन से ऊपर पर 30% देनी होती है।",
+    "price": "दुबई में स्टूडियो अपार्टमेंट AED 350,000 से शुरू होते हैं। 1-बेडरूम AED 700,000 से AED 1.2 मिलियन तक होते हैं।",
+    "contact": "हमसे info@xoto.ae पर संपर्क करें या +971 4 000 0000 पर कॉल करें।",
+    "about": "Xoto UAE का पहला AI-संचालित प्रॉपर्टी प्लेटफॉर्म है।",
+    "default": "मैं ज़ोबिया हूँ — Xoto की AI सहायक। यूएई में प्रॉपर्टी और होम लोन के बारे में कुछ भी पूछें।"
+  },
+  "es": {
+    "hello": "¡Hola! Soy Xobia, su asistente de IA de Xoto. ¿Cómo puedo ayudarle hoy?",
+    "price": "Los apartamentos comienzan desde AED 350,000 para estudios en Dubái. Los de una habitación van de AED 700,000 a AED 1.2 millones.",
+    "contact": "Puede contactarnos en info@xoto.ae o llamarnos al +971 4 000 0000.",
+    "about": "Xoto es la plataforma líder en los EAU impulsada por IA para el ciclo de vida inmobiliario.",
+    "default": "Soy Xobia, su asistente de Xoto. Puedo ayudarle con propiedades y préstamos hipotecarios en los EAU."
+  },
+  "fr": {
+    "hello": "Bonjour ! Je suis Xobia, votre assistante IA de Xoto. Comment puis-je vous aider aujourd'hui ?",
+    "price": "Les appartements studios à Dubaï commencent à partir de 350 000 AED. Les appartements d'une chambre vont de 700 000 à 1,2 million AED.",
+    "contact": "Contactez-nous à info@xoto.ae ou appelez le +971 4 000 0000.",
+    "about": "Xoto est la première plateforme immobilière alimentée par IA aux Émirats arabes unis.",
+    "default": "Je suis Xobia, votre assistante Xoto. Je peux vous aider avec l'immobilier et les prêts hypothécaires aux EAU."
+  },
+  "de": {
+    "hello": "Hallo! Ich bin Xobia, Ihre KI-Assistentin von Xoto. Wie kann ich Ihnen heute helfen?",
+    "price": "Studio-Apartments in Dubai beginnen bei AED 350.000. 1-Zimmer-Wohnungen kosten zwischen AED 700.000 und AED 1,2 Millionen.",
+    "contact": "Kontaktieren Sie uns unter info@xoto.ae oder rufen Sie uns an: +971 4 000 0000.",
+    "about": "Xoto ist die führende KI-gestützte Immobilienplattform der VAE.",
+    "default": "Ich bin Xobia, Ihre Xoto-Assistentin für Immobilien und Hypotheken in den VAE."
+  }
+}

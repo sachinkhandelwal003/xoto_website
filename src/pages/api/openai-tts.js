@@ -25,9 +25,13 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'tts-1',
+        model: 'gpt-4o-mini-tts',
         input: text,
-        voice: voice,
+        voice,
+        instructions:
+          'Speak warmly and naturally, like a knowledgeable professional assistant. ' +
+          'Use a confident, friendly tone with clear pronunciation. ' +
+          'Be expressive and vary your intonation naturally — avoid sounding robotic.',
       }),
     });
 

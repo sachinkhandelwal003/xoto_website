@@ -4,7 +4,22 @@ import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Environment } from '@react-three/drei'
 import { useRouter } from 'next/router'
 import Avatar from './Avatar'
-import { getAnswer } from '@/answers'
+import { propertyQA } from '@/answers'
+
+const STORAGE_KEY = 'xoto_kb_overrides'
+
+async function getKnowledgeBase(lang) {
+  // Priority: localStorage overrides > knowledgeBase.json > answers.js
+  const base = propertyQA[lang] || propertyQA['en'] || {}
+  let fileKB = {}
+  try {
+    const res = await fetch('/knowledgeBase.json')
+    if (res.ok) { const data = await res.json(); fileKB = data[lang] || {} }
+  } catch { /* ignore, fallback to base */ }
+  let overrides = {}
+  try { overrides = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}')[lang] || {} } catch {}
+  return { ...base, ...fileKB, ...overrides }
+}
 
 // Error Boundary for the 3D Canvas
 class SceneErrorBoundary extends React.Component {
@@ -430,7 +445,20 @@ export default function TestAvatar() {
         router.push(navMatch.route)
       }, 3000)
     } else {
-      const answer = getAnswer(query, selectedLang)
+      // Call OpenAI with KB context
+      let answer = ''
+      try {
+        const kb = await getKnowledgeBase(selectedLang)
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question: query, language: selectedLang, knowledgeBase: kb }),
+        })
+        const data = await res.json()
+        answer = data.answer || 'Sorry, I could not generate a response.'
+      } catch {
+        answer = 'Sorry, something went wrong. Please try again.'
+      }
       setChatLog(prev => [...prev, { role: 'assistant', text: answer }])
       speakWithOpenAI(answer)
     }

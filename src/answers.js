@@ -1,4 +1,4 @@
-const propertyQA = {
+export const propertyQA = {
   en: {
     // ── Identity ──────────────────────────────────────────────────────────────
     hello: "Hello! I am Xobia, your AI mortgage and property assistant from Xoto. I can help you understand UAE home loans, property prices, eligibility, and the buying process. What would you like to know?",
